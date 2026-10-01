@@ -1,0 +1,112 @@
+# =============================================================================
+# Weather Intelligence Assistant — Requirements
+# =============================================================================
+# Python version: 3.10+  (tested on 3.14)
+#
+# Install all at once:
+#   pip install -r requirements.txt
+#
+# Or install by milestone as you progress through the project.
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# MILESTONE 0 — Web framework + config
+# FastAPI: the web framework we use to expose our /ask endpoint
+# uvicorn: the ASGI server that runs FastAPI (like Gunicorn but async-capable)
+# pydantic: data validation — FastAPI uses it to parse/validate JSON bodies
+# pydantic-settings: reads config values from .env files into typed Python objects
+# python-dotenv: loads .env file into os.environ at startup
+# -----------------------------------------------------------------------------
+fastapi==0.142.2
+uvicorn[standard]==0.54.0
+pydantic==2.13.5
+pydantic-settings==2.15.0
+python-dotenv==1.2.4
+
+
+# -----------------------------------------------------------------------------
+# MILESTONE 1 — ML / Data Science
+# numpy: numerical arrays (the foundation of all ML in Python)
+# pandas: tabular data — loading CSVs, feature engineering
+# scikit-learn: classical ML models (LinearRegression, RandomForest, etc.)
+# joblib: saving/loading trained scikit-learn models to disk
+# matplotlib/seaborn: plotting training curves, error distributions
+# -----------------------------------------------------------------------------
+numpy>=1.26.4
+pandas>=2.2.2
+scikit-learn>=1.5.0
+joblib>=1.4.2
+matplotlib>=3.9.0
+seaborn>=0.13.2
+
+
+# -----------------------------------------------------------------------------
+# MILESTONE 2 — RAG pipeline
+# psycopg2-binary: PostgreSQL driver for Python
+# pgvector: Python client for the pgvector PostgreSQL extension
+# sqlalchemy: database connection pooling and query abstraction
+# sentence-transformers: local embedding model — turns text into vectors
+# langchain: orchestration framework that connects LLMs, retrievers, tools
+# langchain-community: community integrations (pgvector retriever, etc.)
+# langchain-openai: LangChain wrapper for OpenAI / Azure OpenAI
+# -----------------------------------------------------------------------------
+psycopg2-binary>=2.9.9
+pgvector>=0.2.5
+sqlalchemy>=2.0.30
+sentence-transformers>=3.0.1
+langchain>=0.2.5
+langchain-community>=0.2.5
+langchain-openai>=0.1.8
+
+
+# -----------------------------------------------------------------------------
+# MILESTONE 4 — Agent / LLM tools
+# langgraph: builds stateful agent workflows as graphs
+# openai: OpenAI Python SDK (used by langchain-openai under the hood)
+# requests: simple HTTP calls for the live weather tool
+# httpx: async HTTP — also used by FastAPI's test client
+# -----------------------------------------------------------------------------
+langgraph>=0.1.5
+openai>=1.30.5
+requests>=2.32.2
+httpx>=0.27.0
+
+
+# -----------------------------------------------------------------------------
+# MILESTONE 5 — Fine-tuning
+# torch: PyTorch — the neural network engine everything runs on
+# transformers: Hugging Face library — loads pretrained models (DistilBERT etc.)
+# datasets: Hugging Face dataset utilities — loading, tokenizing, batching
+# peft: PEFT library — adds LoRA adapters so we only train a tiny fraction
+# accelerate: Hugging Face training helper (handles device placement, mixed precision)
+# evaluate: standardized metric computation (accuracy, F1)
+# -----------------------------------------------------------------------------
+torch>=2.3.1
+transformers>=4.41.2
+datasets>=2.19.2
+peft>=0.11.1
+accelerate>=0.30.0
+evaluate>=0.4.2
+
+
+# -----------------------------------------------------------------------------
+# MILESTONE 7 — Testing
+# pytest: Python test runner
+# pytest-asyncio: allows async test functions (needed for async FastAPI tests)
+# httpx: AsyncClient for testing FastAPI endpoints without running the server
+# -----------------------------------------------------------------------------
+pytest>=8.2.2
+pytest-asyncio>=0.23.7
+
+
+# -----------------------------------------------------------------------------
+# OPTIONAL — Development utilities (not required to run the service)
+# ipykernel/notebook: Jupyter notebooks for EDA
+# black: auto-formatter (consistent code style)
+# ruff: fast linter (catches bugs and style issues)
+# -----------------------------------------------------------------------------
+ipykernel>=6.29.4
+notebook>=7.2.0
+black>=24.4.2
+ruff>=0.4.8

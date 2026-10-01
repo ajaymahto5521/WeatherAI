@@ -1,0 +1,268 @@
+# Weather Intelligence Assistant
+
+An end-to-end AI system that answers weather questions in plain language using:
+- A trained ML forecasting model (scikit-learn)
+- A RAG pipeline over authoritative weather documents (PostgreSQL + pgvector)
+- An LLM-based agent with tools (LangChain / LangGraph)
+- A fine-tuned severity classifier (Hugging Face + LoRA)
+- A FastAPI REST API
+
+> **Status:** Under active development — see milestone progress below.
+
+---
+
+## Architecture
+
+```
+User
+  │
+  ▼
+FastAPI /ask
+  │
+  ▼
+Agent / Orchestrator (LangGraph)
+  │
+  ├──► RAG Retriever ──► PostgreSQL + pgvector ──► Weather reference docs
+  │
+  ├──► Live Weather Tool ──► OpenWeatherMap API
+  │
+  ├──► Forecasting Model ──► trained scikit-learn model
+  │
+  └──► Severity Classifier ──► fine-tuned DistilBERT (LoRA)
+  │
+  ▼
+LLM (Azure OpenAI / GPT-4o)
+  │
+  ▼
+Structured JSON response { answer, sources, tools_used, model_prediction }
+```
+
+---
+
+## Project Structure
+
+```
+weather-intelligence-assistant/
+├── app/
+│   ├── main.py              # FastAPI application entry point
+│   ├── config.py            # configuration + logging (reads from .env)
+│   ├── api/
+│   │   └── routes.py        # API route definitions
+│   ├── models/
+│   │   ├── forecasting.py   # inference wrapper for trained forecaster
+│   │   └── severity.py      # inference wrapper for severity classifier
+│   ├── rag/
+│   │   ├── ingestion.py     # load documents, chunk, embed, store
+│   │   ├── chunking.py      # text chunking strategies
+│   │   ├── embeddings.py    # embedding model wrapper
+│   │   └── retrieval.py     # similarity search against pgvector
+│   ├── agents/
+│   │   ├── agent.py         # LangGraph agent / orchestrator
+│   │   └── tools.py         # tool definitions (weather, forecast, RAG)
+│   ├── services/
+│   │   └── answer_service.py # ties retrieval + LLM into a final answer
+│   └── schemas/
+│       └── api.py           # Pydantic request/response schemas
+├── data/
+│   ├── raw/                 # original downloaded datasets (git-ignored)
+│   ├── processed/           # cleaned/feature-engineered data (git-ignored)
+│   └── reference/           # authoritative weather documents for RAG
+├── notebooks/               # EDA and experiment notebooks
+├── training/
+│   ├── train_forecaster.py  # Milestone 1: train + evaluate ML model
+│   └── train_severity.py    # Milestone 5: fine-tune severity classifier
+├── tests/                   # pytest test suite
+├── scripts/                 # utility scripts (ingest docs, download data)
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+├── .env.example             # template — copy to .env and fill in secrets
+└── README.md
+```
+
+---
+
+## Setup
+
+### 1. Clone the repository
+
+```bash
+git clone <repo-url>
+cd weather-intelligence-assistant
+```
+
+### 2. Create a virtual environment
+
+```bash
+python -m venv venv
+
+# Windows
+venv\Scripts\activate
+
+# macOS/Linux
+source venv/bin/activate
+```
+
+### 3. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Configure environment variables
+
+```bash
+cp .env.example .env
+# Edit .env and fill in your API keys and database credentials
+```
+
+Required variables:
+| Variable | Where to get it |
+|---|---|
+| `AZURE_OPENAI_API_KEY` | Azure Portal → Azure OpenAI |
+| `AZURE_OPENAI_ENDPOINT` | Azure Portal → Azure OpenAI |
+| `AZURE_OPENAI_DEPLOYMENT_NAME` | Azure OpenAI Studio → Deployments |
+| `OPENWEATHER_API_KEY` | https://openweathermap.org/api |
+| `POSTGRES_*` | See Database Setup below |
+
+### 5. Database Setup
+
+```bash
+# Start PostgreSQL with pgvector via Docker
+docker compose up -d postgres
+
+# Or connect to an existing PostgreSQL instance
+# and run: CREATE EXTENSION IF NOT EXISTS vector;
+```
+
+---
+
+## Running the Service
+
+```bash
+# Development (with hot reload)
+uvicorn app.main:app --reload
+
+# Production (inside Docker)
+docker compose up --build
+```
+
+The API is available at: http://localhost:8000
+Interactive docs: http://localhost:8000/docs
+
+---
+
+## API Usage
+
+### Health check
+
+```bash
+curl http://localhost:8000/health
+```
+
+### Ask a question
+
+```bash
+curl -X POST http://localhost:8000/ask \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What does a severe thunderstorm warning mean?"}'
+```
+
+Response:
+
+```json
+{
+  "answer": "...",
+  "sources": [{ "document": "...", "section": "..." }],
+  "tools_used": ["rag_retriever"],
+  "model_prediction": null
+}
+```
+
+---
+
+## Data Sources
+
+| Data | Used for | Source |
+|---|---|---|
+| Historical weather CSV | ML forecasting model training | NOAA / Open-Meteo (see Milestone 1) |
+| Weather reference documents | RAG knowledge base | NWS glossary, WMO guidelines |
+| Severity classification labels | Fine-tuning training data | Synthetic educational dataset (see Milestone 5) |
+
+---
+
+## Training
+
+### Forecasting model (Milestone 1)
+
+```bash
+python training/train_forecaster.py
+```
+
+Output: `models/forecaster.joblib` + evaluation metrics printed to stdout.
+
+### Severity classifier (Milestone 5)
+
+```bash
+python training/train_severity.py
+```
+
+Output: `models/severity_classifier/` + zero-shot vs fine-tuned comparison table.
+
+---
+
+## RAG Ingestion (Milestone 2)
+
+```bash
+python scripts/ingest_documents.py
+```
+
+This reads `data/reference/`, chunks the documents, generates embeddings, and stores them in PostgreSQL + pgvector.
+
+---
+
+## Testing
+
+```bash
+pytest tests/ -v
+```
+
+---
+
+## Docker
+
+```bash
+# Build and start everything (app + postgres)
+docker compose up --build
+
+# Stop everything
+docker compose down
+```
+
+---
+
+## Milestone Progress
+
+- [x] M0 — Project foundation, FastAPI /health
+- [ ] M1 — ML forecasting model
+- [ ] M2 — RAG pipeline
+- [ ] M3 — /ask RAG endpoint
+- [ ] M4 — Agent + tools
+- [ ] M5 — Fine-tuned severity classifier
+- [ ] M6 — Full integration
+- [ ] M7 — Tests
+- [ ] M8 — Docker deployment
+
+---
+
+## Limitations
+
+- The severity classifier is trained on a small synthetic dataset. Do not use it for real operational weather decisions.
+- The forecasting model is trained on a sample/educational dataset. Accuracy depends on data quality.
+- RAG quality depends on the documents ingested. The system will say so when context is insufficient.
+
+---
+
+## License
+
+MIT

@@ -1,0 +1,89 @@
+# =============================================================================
+# Weather Intelligence Assistant — .gitignore
+# =============================================================================
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+
+# --- Virtual environments ---
+venv/
+.venv/
+env/
+ENV/
+
+# --- Distribution / packaging ---
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# --- Secrets — NEVER COMMIT THESE ---
+.env
+*.env
+secrets.json
+credentials.json
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# --- Data files (can be large; re-downloadable) ---
+data/raw/
+data/processed/
+# Keep the reference docs folder tracked (we commit those intentionally)
+# data/reference/ is NOT ignored
+
+# --- Trained model artifacts (use versioned storage for large models) ---
+# Only ignore the top-level /models/ directory (saved .pkl/.pt files)
+# NOT app/models/ which contains Python source code
+/models/
+*.pkl
+*.joblib
+*.pt
+*.pth
+*.bin
+# Exception: keep .gitkeep so empty folders are tracked
+!/models/.gitkeep
+# Exception: keep small test fixtures if needed
+!tests/fixtures/*.pkl
+
+# --- Logs ---
+logs/
+*.log
+
+# --- OS files ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- IDEs ---
+.vscode/
+.idea/
+*.swp
+*.swo
+.cursor/
+
+# --- pytest cache ---
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- mypy ---
+.mypy_cache/
+.dmypy.json
+
+# --- ruff / black cache ---
+.ruff_cache/
+
+# --- Docker ---
+*.dockerignore
+
+# --- Temporary files ---
+tmp/
+temp/
+*.tmp
