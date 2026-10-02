@@ -87,3 +87,6 @@ htmlcov/
 tmp/
 temp/
 *.tmp
+training_output.txt
+tmp_*.py
+tmp_*.txt
