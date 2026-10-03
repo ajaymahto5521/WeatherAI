@@ -115,9 +115,16 @@ class AnswerService:
 _service: AnswerService | None = None
 
 
-def get_answer_service() -> AnswerService:
-    """Lazily build the process-wide service (loads the index on first use)."""
+def get_answer_service():
+    """
+    Lazily build the process-wide answerer (loads the index on first use).
+    Returns the tool-calling agent when an LLM is configured, otherwise the
+    RAG-only AnswerService. Both expose .answer(question) -> AskResponse.
+    """
     global _service
     if _service is None:
-        _service = AnswerService(Retriever(), azure_llm())
+        from app.agents.agent import create_agent
+
+        retriever = Retriever()
+        _service = create_agent(retriever) or AnswerService(retriever, azure_llm())
     return _service
