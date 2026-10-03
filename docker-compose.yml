@@ -9,6 +9,33 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-weather_user} -d ${POSTGRES_DB:-weather_intelligence}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    env_file: .env
+    environment:
+      # Override .env values that only make sense on the host.
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      APP_ENV: production
+      APP_DEBUG: "false"
+      EMBEDDING_BACKEND: tfidf
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      # Trained model artifacts (git-ignored): run the training scripts first.
+      - ./models:/app/models:ro
+      # Holds the fitted embedder written at ingestion; must persist for retrieval.
+      - ragindex:/app/data/processed
 
 volumes:
   pgdata:
+  ragindex:

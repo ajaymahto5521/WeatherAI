@@ -1,0 +1,16 @@
+# Runtime-only dependencies for the Docker image (no training/notebook/dev tools).
+# torch is installed separately from the CPU wheel index in the Dockerfile.
+fastapi==0.142.2
+uvicorn[standard]==0.54.0
+pydantic==2.13.5
+pydantic-settings==2.15.0
+python-dotenv==1.2.4
+numpy>=1.26.4
+pandas>=2.2.2
+scikit-learn>=1.5.0
+joblib>=1.4.2
+psycopg2-binary>=2.9.9
+openai>=1.30.5
+requests>=2.32.2
+transformers>=4.41.2
+peft>=0.11.1

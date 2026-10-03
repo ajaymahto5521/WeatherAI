@@ -80,9 +80,6 @@ htmlcov/
 # --- ruff / black cache ---
 .ruff_cache/
 
-# --- Docker ---
-*.dockerignore
-
 # --- Temporary files ---
 tmp/
 temp/

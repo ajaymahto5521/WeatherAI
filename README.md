@@ -231,6 +231,10 @@ pytest tests/ -v
 
 ## Docker
 
+Prerequisites: a `.env` with `POSTGRES_PASSWORD` (and the Azure/OpenWeather keys), and trained
+models in `./models` (`python training/train_forecaster.py`, `python training/train_severity.py`).
+`./models` is mounted read-only; the RAG index is rebuilt into Postgres on every container start.
+
 ```bash
 # Build and start everything (app + postgres)
 docker compose up --build
@@ -250,8 +254,8 @@ docker compose down
 - [x] M4 — Agent + tools
 - [x] M5 — Fine-tuned severity classifier
 - [x] M6 — Full integration
-- [ ] M7 — Tests
-- [ ] M8 — Docker deployment
+- [x] M7 — Tests
+- [x] M8 — Docker deployment (compose config validated; image build untested)
 
 ---
 
