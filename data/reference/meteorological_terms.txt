@@ -1,0 +1,139 @@
+DOCUMENT: Meteorological Terms and Concepts
+SOURCE: Educational summary based on WMO (World Meteorological Organization) and standard meteorological references
+VERSION: 1.0
+SECTIONS: Atmospheric Pressure, Temperature, Humidity, Wind, Clouds, Precipitation, Stability, Fronts
+
+---
+
+SECTION: Atmospheric Pressure
+
+ATMOSPHERIC PRESSURE: The force per unit area exerted by the weight of the atmosphere above a given point. Standard sea-level pressure is 1013.25 hPa (hectopascals) or 29.92 inches of mercury (inHg).
+
+HECTOPASCAL (hPa): The standard unit of atmospheric pressure in meteorology. 1 hPa = 100 pascals = 1 millibar. Commonly used in weather forecasting worldwide.
+
+HIGH PRESSURE SYSTEM (ANTICYCLONE): An area where the atmospheric pressure is higher than in surrounding areas. Air flows outward and descends. Associated with clear skies, stable weather, and fair conditions. Wind circulates clockwise in the Northern Hemisphere.
+
+LOW PRESSURE SYSTEM (CYCLONE): An area where atmospheric pressure is lower than surrounding areas. Air flows inward and rises. Rising air cools, moisture condenses, clouds and precipitation develop. Associated with unsettled, stormy weather. Wind circulates counterclockwise in the Northern Hemisphere.
+
+PRESSURE GRADIENT: The change in pressure over a given horizontal distance. A steep pressure gradient (closely spaced isobars on a weather map) produces strong winds. A shallow gradient produces light winds.
+
+ISOBAR: A line on a weather map connecting points of equal atmospheric pressure. The spacing and shape of isobars reveals wind strength and direction.
+
+BAROMETRIC TENDENCY: The change in atmospheric pressure over the past 3 hours. A falling barometer indicates an approaching storm or low pressure system. A rising barometer indicates clearing conditions.
+
+---
+
+SECTION: Temperature
+
+TEMPERATURE INVERSION: A layer of the atmosphere where temperature increases with altitude, reversing the normal lapse rate. Inversions trap pollutants near the surface, reduce visibility, and suppress convective storm development. A surface inversion forms overnight when the ground cools rapidly by radiation.
+
+LAPSE RATE: The rate at which temperature decreases with altitude. The standard environmental lapse rate is approximately 6.5 degrees C per 1000 meters. The dry adiabatic lapse rate (DALR) is 9.8 degrees C per 1000 meters -- the rate at which an unsaturated parcel of air cools as it rises.
+
+DEWPOINT TEMPERATURE: The temperature to which air must be cooled at constant pressure for saturation to occur and condensation to begin. A dewpoint close to the actual air temperature indicates high relative humidity and a greater likelihood of fog, clouds, or precipitation.
+
+HEAT ISLAND EFFECT: Urban areas are typically warmer than surrounding rural areas due to the absorption of solar radiation by buildings, roads, and pavement, and the reduction in vegetation. This can affect local weather patterns, increase cooling energy demands, and worsen heat wave impacts in cities.
+
+FROST POINT: The temperature at which ice crystals (frost) form directly from water vapor. When the dewpoint is below 0 degrees C and surfaces cool to the frost point, frost forms. Frost can damage crops even when air temperatures remain above 0 degrees C.
+
+---
+
+SECTION: Humidity
+
+RELATIVE HUMIDITY (RH): The ratio of the actual water vapor pressure to the saturation water vapor pressure at the same temperature, expressed as a percentage. RH = 100% means the air is saturated and cannot hold more water vapor without condensation occurring.
+
+ABSOLUTE HUMIDITY: The actual mass of water vapor present in a unit volume of air, expressed in grams per cubic meter. Unlike relative humidity, absolute humidity does not change with temperature.
+
+SPECIFIC HUMIDITY: The mass of water vapor per unit mass of moist air (in g/kg). A more accurate measure of moisture content than relative humidity for thermodynamic calculations.
+
+SATURATION: The condition where air holds the maximum possible water vapor at a given temperature. Warmer air can hold more water vapor. At saturation, evaporation and condensation occur at equal rates.
+
+EVAPOTRANSPIRATION (ET): The combined process of evaporation from soil and water surfaces plus transpiration from plants. A key component of the water cycle. Reference ET (ET0) is used in agriculture to determine irrigation needs.
+
+---
+
+SECTION: Wind
+
+WIND: The horizontal movement of air from high pressure to low pressure areas. Wind direction is defined as the direction FROM which the wind blows. A north wind blows FROM the north TO the south.
+
+BEAUFORT SCALE: An empirical scale relating wind speed to observed conditions at sea and on land.
+Beaufort 0 (Calm): Less than 1 km/h. Smoke rises vertically.
+Beaufort 3 (Gentle breeze): 12-19 km/h. Leaves and small twigs in constant motion.
+Beaufort 6 (Strong breeze): 39-49 km/h. Large tree branches move. Umbrellas difficult to use.
+Beaufort 8 (Gale): 62-74 km/h. Twigs break off trees. Progress on foot difficult.
+Beaufort 10 (Storm): 89-102 km/h. Trees uprooted. Considerable structural damage.
+Beaufort 12 (Hurricane force): 117+ km/h. Devastating. Air filled with foam and spray.
+
+JET STREAM: A fast-flowing river of air high in the upper troposphere (9-12 km altitude). Wind speeds typically 90-200 km/h. Jet streams steer weather systems and influence surface weather patterns. The polar jet stream is the most significant in mid-latitudes.
+
+WIND SHEAR: The change in wind speed or direction with height. Wind shear is a critical ingredient for thunderstorm rotation and tornado formation. Severe thunderstorms typically develop in environments with strong directional and speed shear.
+
+DOWNBURST: A strong downdraft of air produced by a thunderstorm that spreads out at the surface. Straight-line winds from downbursts can exceed 100 km/h and cause damage similar to a weak tornado. A microburst is a downburst less than 4 km in diameter.
+
+LAND BREEZE AND SEA BREEZE: Thermally-driven local wind systems near coastlines. During the day, land heats faster than sea, causing air to rise over land and sea air to flow inland (sea breeze). At night, land cools faster, reversing the pattern (land breeze).
+
+---
+
+SECTION: Clouds
+
+CLOUD CLASSIFICATION (by altitude):
+HIGH CLOUDS (above 6000 m): Cirrus (Ci), Cirrostratus (Cs), Cirrocumulus (Cc). Composed mainly of ice crystals. Thin, wispy, white.
+MIDDLE CLOUDS (2000-6000 m): Altostratus (As), Altocumulus (Ac). Mixed ice and water droplets.
+LOW CLOUDS (below 2000 m): Stratus (St), Stratocumulus (Sc), Nimbostratus (Ns). Mostly water droplets. Nimbostratus produces continuous rain.
+VERTICAL DEVELOPMENT: Cumulus (Cu), Cumulonimbus (Cb). Cumulus are fair-weather clouds. Cumulonimbus (thunderstorm clouds) extend from near the surface to the tropopause (12+ km).
+
+CUMULONIMBUS: The thunderstorm cloud. A towering convective cloud associated with lightning, heavy rain, hail, and tornadoes. The anvil top (cirrus shield) forms when the updraft reaches the tropopause and spreads horizontally.
+
+FOG: A cloud at ground level, reducing visibility below 1 km. Types include radiation fog (forms on clear nights as ground cools), advection fog (warm moist air moves over a cool surface), and upslope fog (air forced up terrain).
+
+---
+
+SECTION: Precipitation
+
+PRECIPITATION: Any form of water -- liquid or solid -- falling from clouds. Includes rain, drizzle, snow, sleet (ice pellets), freezing rain, and hail.
+
+RAIN: Liquid water drops larger than 0.5 mm in diameter falling from clouds.
+
+DRIZZLE: Very small water droplets (0.2-0.5 mm) falling from stratus clouds. Drizzle is associated with low-level stable conditions.
+
+SNOW: Ice crystals that have aggregated into snowflakes. Snowflakes form at temperatures below 0 degrees C. Snow density varies greatly -- fresh powder may be 5-10% water by weight, while wet snow can be 30-40%.
+
+FREEZING RAIN: Rain that freezes upon contact with surfaces at or below 0 degrees C. Creates extremely dangerous ice accumulation on roads, power lines, and aircraft. Associated with a temperature inversion above freezing with sub-freezing air near the surface.
+
+HAIL: Balls or chunks of ice produced inside thunderstorms by strong updrafts that carry water droplets through freezing temperatures repeatedly. Hail diameter ranges from 5 mm (pea size) to over 15 cm (softball size). Large hail requires updraft speeds exceeding 100 km/h.
+
+PRECIPITATION TYPES FOR INDIA (Monsoon context):
+SOUTHWEST MONSOON: The primary rainy season for most of India, typically June through September. Driven by differential heating between the Indian subcontinent and the Indian Ocean. Accounts for 70-90% of India's annual rainfall.
+NORTHEAST MONSOON: Affects southeastern India (Tamil Nadu, Andhra Pradesh) from October to December.
+WESTERN DISTURBANCES: Extratropical cyclones that originate in the Mediterranean and bring winter rainfall to northwestern India (including Delhi) from December to February.
+
+---
+
+SECTION: Atmospheric Stability and Convection
+
+STABILITY: The tendency of air to resist or enhance vertical motion. A stable atmosphere resists vertical displacement -- displaced air returns to its original position. An unstable atmosphere encourages vertical motion -- displaced air accelerates away from its original position.
+
+CAPE (CONVECTIVE AVAILABLE POTENTIAL ENERGY): A measure of the energy available for convective storm development. Expressed in Joules per kilogram (J/kg).
+CAPE 0-1000 J/kg: Weak instability. Ordinary thunderstorms possible.
+CAPE 1000-2500 J/kg: Moderate instability. Strong thunderstorms possible.
+CAPE 2500-3500 J/kg: Large instability. Severe thunderstorms likely.
+CAPE above 3500 J/kg: Extreme instability. Potentially violent thunderstorms.
+
+LIFTED INDEX (LI): A stability index. Negative values indicate instability. LI below -6 indicates extreme instability and potential for violent thunderstorms.
+
+CONVECTIVE INHIBITION (CIN): Energy that must be overcome before convection can initiate. Acts as a cap. A strong cap can store energy that is released explosively when eventually broken.
+
+INTERTROPICAL CONVERGENCE ZONE (ITCZ): A belt near the equator where northeast and southeast trade winds meet. Associated with persistent deep convection, heavy rainfall, and the formation of tropical weather systems.
+
+---
+
+SECTION: Weather Fronts
+
+COLD FRONT: A boundary where cold air advances and replaces warmer air. Cold fronts typically move faster than warm fronts and are associated with a narrow band of intense precipitation, thunderstorms, and a sharp temperature drop followed by clearing.
+
+WARM FRONT: A boundary where warm air advances over retreating cold air. Warm fronts are associated with a gradual transition from high clouds (cirrus) to middle clouds (altostratus) to low clouds (nimbostratus) and steady precipitation over a wide area.
+
+OCCLUDED FRONT: A front formed when a cold front overtakes a warm front, lifting the warm air sector off the surface. Associated with a complex mix of cloud and precipitation types.
+
+STATIONARY FRONT: A boundary between air masses that shows little movement. Can produce persistent cloudiness and precipitation for days.
+
+DRY LINE: A boundary between moist and dry air masses common over the Great Plains of North America. Can act as a focus for severe thunderstorm development.

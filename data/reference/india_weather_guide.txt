@@ -1,0 +1,173 @@
+DOCUMENT: India Weather Patterns and IMD Alert Classifications
+SOURCE: Educational summary based on India Meteorological Department (IMD) guidelines and publicly available meteorological literature
+VERSION: 1.0
+SECTIONS: IMD Alert System, Monsoon, Delhi Climate, Cyclones, Heat Waves, Cold Waves
+
+---
+
+SECTION: IMD Four-Color Alert System
+
+The India Meteorological Department uses a four-color coded alert system for communicating weather hazards to the public and authorities. This system is widely used across Indian weather bulletins.
+
+GREEN (Normal / No Warning): No action required. Weather conditions are within normal parameters. No significant hazard expected.
+
+YELLOW (Watch / Be Aware): Conditions may worsen. Be aware of the possibility of severe weather. Monitor updates. Yellow alerts are issued when there is a possibility of heavy rain, moderate to severe thunderstorms, or unusual temperature conditions.
+
+ORANGE (Alert / Be Prepared): Significant weather event expected. Be prepared to take action. Orange alerts indicate heavy to very heavy rainfall likely, severe thunderstorms, or hazardous conditions that may disrupt normal activities.
+
+RED (Warning / Take Action): Extremely severe weather conditions are imminent or occurring. Take immediate action. Red alerts are issued for extremely heavy rainfall (above 204.4 mm in 24 hours), very severe cyclonic storms, heatwaves above 47 degrees C, or other catastrophic events. Authorities should be placed on maximum alert.
+
+RAINFALL CLASSIFICATION (IMD):
+No rain: 0 mm/day
+Light rain: 0.1 to 2.4 mm/day
+Moderate rain: 2.5 to 7.5 mm/day
+Rather heavy rain: 7.6 to 15.5 mm/day
+Heavy rain: 15.6 to 64.4 mm/day
+Very heavy rain: 64.5 to 115.5 mm/day
+Extremely heavy rain: 115.6 to 204.4 mm/day
+Exceptionally heavy rain: more than 204.4 mm/day
+
+---
+
+SECTION: Indian Monsoon System
+
+THE SOUTHWEST MONSOON (Kharif season): The most important weather system for India. It typically makes landfall over Kerala around June 1 and covers the entire country by mid-July. The monsoon retreats from northwestern India around September and from the south around November-December.
+
+MONSOON ONSET CRITERIA (IMD): For the monsoon to be declared over Kerala, the following conditions must be met:
+- Rainfall of at least 2.5 mm in 14 of 14 specified stations for 2 consecutive days after May 10
+- Depth of westerlies (winds from the west-southwest) should be maintained up to 600 hPa
+- INSAT satellite imagery should indicate persistent deep cloud cover
+
+BREAK MONSOON: A period during the monsoon season when rainfall activity over the plains of India decreases substantially, while rainfall intensifies over the Himalayas and the northeastern states. Break spells typically last 5-7 days.
+
+ACTIVE MONSOON: A phase with vigorous rainfall over a large area. The monsoon trough lies close to its normal position over the plains, bringing widespread heavy to very heavy rainfall.
+
+MONSOON TROUGH: A region of low pressure extending from northwestern India to the Bay of Bengal. The position of the monsoon trough determines where the heaviest rainfall occurs. When the trough shifts north, rains intensify in the Himalayan foothills; when it shifts south, the plains receive heavy rainfall.
+
+LOW PRESSURE SYSTEMS IN THE BAY OF BENGAL: Cyclonic circulations, depressions, and deep depressions that form over the Bay of Bengal during the monsoon season. These systems intensify monsoon rainfall and can cause devastating floods when they make landfall.
+
+---
+
+SECTION: Delhi and North India Climate
+
+DELHI CLIMATE (Koppen classification: BSh - Hot semi-arid steppe):
+
+SEASONS:
+WINTER (December to February): Cold and dry. Temperatures range from 2-22 degrees C. Dense fog is common in January, severely disrupting air travel, road transport, and rail services. Dense fog is defined as visibility less than 200 meters.
+
+SPRING (March to May): Hot and dry with rising temperatures. Dust storms (Andhi) are common in May and June. Dust storms in Delhi are caused by convective activity and can reduce visibility to near zero in minutes.
+
+MONSOON (July to September): Delhi receives about 60-65% of its annual rainfall (approximately 650 mm total) during these three months. Heavy rainfall events can cause urban flooding due to inadequate drainage. Humidity increases significantly.
+
+POST-MONSOON (October to November): Transition period. Temperatures fall. Stubble burning in Punjab and Haryana, combined with calm winds and low temperatures, causes severe air quality deterioration (AQI can exceed 400-500 in November).
+
+AUTUMN-WINTER POLLUTION: Delhi typically experiences among the worst air quality in the world during October-January due to a combination of stubble burning, vehicle emissions, industrial pollution, and meteorological conditions (temperature inversions, low wind speeds) that trap pollutants near the surface.
+
+TEMPERATURE EXTREMES IN DELHI:
+Highest recorded temperature: 48.4 degrees C (May 28, 2024, Mungeshpur)
+Lowest recorded temperature: -2.2 degrees C (January 7-8, 1991, Safdarjung)
+
+WESTERN DISTURBANCES AND DELHI:
+Western Disturbances are extratropical cyclones that originate over the Mediterranean Sea, Caspian Sea, and Black Sea. They travel eastward through the jet stream and bring rain and snow to northwestern India (Jammu and Kashmir, Himachal Pradesh) and light to moderate rainfall to Delhi and Punjab during December to March. Western Disturbances are responsible for the rabi (winter) crop irrigation in northwest India.
+
+---
+
+SECTION: Thunderstorms and Dust Storms (Andhi)
+
+THUNDERSTORM FREQUENCY IN DELHI: Delhi experiences 15-25 thunderstorm days per year, primarily during the pre-monsoon season (April-June) and the monsoon season (July-September).
+
+PRE-MONSOON THUNDERSTORMS: Typically form in the afternoon due to strong surface heating and moisture influx from the Bay of Bengal. Can be accompanied by severe squalls, large hail, and cloud-to-ground lightning.
+
+ANDHI (DUST STORM): A severe dust storm characteristic of the plains of northwest India, particularly Rajasthan and the Delhi region. Andhi storms are associated with:
+- Intense surface heating creating strong convective systems
+- A cold pool of air from a collapsing thunderstorm spreading outward
+- Lifting of loose dry soil into a towering wall of dust
+- Wind speeds can exceed 70-80 km/h
+- Visibility can drop to near zero within minutes
+- Typical duration: 30 minutes to 2 hours
+
+SAFETY DURING ANDHI:
+- Move indoors immediately
+- Close all windows and doors
+- Avoid driving; if caught outdoors, stay low to the ground
+- Cover nose and mouth with cloth
+- The dust can cause respiratory problems in sensitive individuals
+
+---
+
+SECTION: Indian Cyclone Classification
+
+The India Meteorological Department classifies tropical cyclones in the North Indian Ocean as follows:
+
+LOW PRESSURE AREA: A weak cyclonic circulation with maximum sustained surface winds less than 17 km/h (Beaufort scale 1-3). The initial stage of tropical disturbance.
+
+DEPRESSION: Maximum sustained surface winds of 17-27 km/h (Beaufort scale 3-4). The system is gaining organization and a closed circulation is developing.
+
+DEEP DEPRESSION: Maximum sustained surface winds of 28-50 km/h (Beaufort scale 4-5). A distinct center of circulation. Can produce moderate to heavy rainfall.
+
+CYCLONIC STORM: Maximum sustained surface winds of 51-63 km/h (Beaufort scale 6-7). A well-organized tropical cyclone. Named by the IMD.
+
+SEVERE CYCLONIC STORM: Maximum sustained surface winds of 64-89 km/h (Beaufort scale 8-9). Damaging winds and significant storm surge near coastal areas.
+
+VERY SEVERE CYCLONIC STORM: Maximum sustained surface winds of 90-119 km/h (Beaufort scale 10-11). Extremely dangerous. Significant damage to structures, trees, and crops.
+
+EXTREMELY SEVERE CYCLONIC STORM: Maximum sustained surface winds of 120-167 km/h (Beaufort scale 12 and above). Catastrophic damage. Life-threatening storm surge.
+
+SUPER CYCLONIC STORM: Maximum sustained surface winds exceeding 167 km/h. The most intense category. Devastating destruction. Examples: Super Cyclone Amphan (2020), Very Severe Cyclone Phailin (2013).
+
+CYCLONE SEASON IN THE NORTH INDIAN OCEAN:
+Bay of Bengal: Two cyclone seasons -- pre-monsoon (April-May) and post-monsoon (October-December). Post-monsoon is more active and produces stronger storms.
+Arabian Sea: Less frequent than Bay of Bengal but cyclone intensity is increasing. Examples: Cyclone Biparjoy (2023), Cyclone Tauktae (2021).
+
+---
+
+SECTION: Heat Waves in India
+
+HEAT WAVE DEFINITION (IMD):
+A heat wave is declared when the maximum temperature of a station reaches at least 40 degrees C for plains, 30 degrees C for hilly regions, or coastal areas at least 37 degrees C, AND the departure from normal is at least 4.5 degrees C.
+
+SEVERE HEAT WAVE: Maximum temperature departure from normal is more than 6.5 degrees C.
+
+HEAT WAVE IMPACT CRITERIA: If the actual maximum temperature is 45 degrees C or more, it is declared a heat wave regardless of departure from normal.
+
+HEAT WAVE MORTALITY: India's severe heat wave of 2015 killed more than 2,500 people. Heat wave deaths are highest among outdoor workers, the elderly, infants, and those without access to cooling.
+
+HEAT WAVE PRECAUTIONS:
+- Stay indoors during peak heat hours (noon to 3 PM)
+- Drink water regularly even if not thirsty -- 8-10 glasses per day
+- Wear light, loose cotton clothing
+- Use wet cloth on head, neck, and arms
+- Avoid alcohol, tea, coffee, and carbonated drinks that cause dehydration
+- ORS (Oral Rehydration Salts) should be available
+
+NIGHT-TIME TEMPERATURE SIGNIFICANCE: During extreme heat waves, if night-time minimum temperatures remain above 25 degrees C (warm nights), the human body cannot recover from daytime heat stress. This significantly increases heat-related mortality.
+
+---
+
+SECTION: Cold Waves in India
+
+COLD WAVE DEFINITION (IMD):
+A cold wave is declared when the minimum temperature is 10 degrees C or less for plains, AND the departure from normal is at least 4.5 degrees C below normal.
+
+SEVERE COLD WAVE: The minimum temperature departure from normal is more than 6.5 degrees C.
+
+COLD WAVE IMPACT CRITERIA: If the actual minimum temperature is 4 degrees C or less, it is declared a cold wave regardless of departure from normal.
+
+COLD WAVE IMPACTS IN DELHI:
+- Dense fog causing major disruption to transport (flights, trains, roads)
+- Cold-related illnesses including hypothermia in homeless populations
+- Crop damage in the surrounding agricultural regions
+- Increased demand for heating, which combined with fog and inversions worsens air quality
+
+COLD WAVE PRECAUTIONS:
+- Wear layered warm clothing; cover head, hands, and feet
+- Keep indoor heating sources safe -- do not use open fires indoors without ventilation
+- Check on elderly neighbors and homeless individuals
+- Be aware of hypothermia symptoms: intense shivering, slurred speech, drowsiness, confusion
+- Frost on crops: farmers should irrigate and use smoke screens to protect crops
+
+FOG CLASSIFICATION (IMD, by visibility):
+Very dense fog: Visibility less than 50 meters
+Dense fog: Visibility 50-200 meters
+Moderate fog: Visibility 200-500 meters
+Shallow fog: Visibility 500-1000 meters
