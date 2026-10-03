@@ -76,7 +76,17 @@ def get_live_weather(city: str) -> ToolResult:
         f"(feels like {main.get('feels_like')}°C), {desc}, humidity {main.get('humidity')}%, "
         f"wind {wind.get('speed')} m/s, pressure {main.get('pressure')} hPa."
     )
-    return ToolResult(text, {"city": d.get("name", city), "temperature": main.get("temp")})
+    # Text in the style the severity classifier was trained on (km/h, mm, °C).
+    wind_kmh = round((wind.get("speed") or 0) * 3.6)
+    rain_mm = (d.get("rain") or {}).get("1h", 0)
+    severity_text = (
+        f"{desc.capitalize()}. Winds {wind_kmh} km/h. Rainfall {rain_mm} mm. "
+        f"Temperature around {round(main.get('temp') or 0)}°C."
+    )
+    return ToolResult(
+        text,
+        {"city": d.get("name", city), "temperature": main.get("temp"), "severity_text": severity_text},
+    )
 
 
 # =============================================================================

@@ -74,9 +74,21 @@ def azure_chat() -> ChatFunc | None:
 
 
 class WeatherAgent:
-    def __init__(self, chat: ChatFunc, registry: dict[str, Callable[..., ToolResult]]):
+    def __init__(self, chat: ChatFunc, registry: dict[str, Callable[..., ToolResult]],
+                 severity_classifier=None):
         self.chat = chat
         self.registry = registry
+        self.severity_classifier = severity_classifier
+
+    def _classify(self, text: str | None) -> str | None:
+        """Severity of observed conditions. Never fails the request."""
+        if not text or self.severity_classifier is None:
+            return None
+        try:
+            return self.severity_classifier.classify(text).label
+        except Exception:
+            logger.exception("Severity classification failed")
+            return None
 
     def _run_tool(self, name: str, raw_args: str) -> ToolResult:
         fn = self.registry.get(name)
@@ -97,6 +109,7 @@ class WeatherAgent:
         tools_used: list[str] = []
         sources: dict[tuple[str, str], SourceDocument] = {}
         prediction: ModelPrediction | None = None
+        severity_text: str | None = None
         text = ""
 
         for _ in range(MAX_STEPS):
@@ -113,6 +126,7 @@ class WeatherAgent:
                     tools_used.append(name)
                 for s in result.data.get("sources", []):
                     sources.setdefault((s["document"], s["section"]), SourceDocument(**s))
+                severity_text = result.data.get("severity_text", severity_text)
                 if name == "forecast_temperature" and "predicted_temperature" in result.data:
                     prediction = ModelPrediction(**result.data)
                 messages.append({"role": "tool", "tool_call_id": call["id"], "content": result.text})
@@ -126,9 +140,16 @@ class WeatherAgent:
             sources=list(sources.values()),
             tools_used=tools_used,
             model_prediction=prediction,
+            # Only set from observed conditions (live weather); definitional answers
+            # like "what is a tornado warning" must not be labelled SEVERE.
+            severity=self._classify(severity_text),
         )
 
 
 def create_agent(retriever) -> WeatherAgent | None:
     chat = azure_chat()
-    return WeatherAgent(chat, build_registry(retriever)) if chat else None
+    if not chat:
+        return None
+    from app.models.severity import SeverityClassifier
+
+    return WeatherAgent(chat, build_registry(retriever), SeverityClassifier())

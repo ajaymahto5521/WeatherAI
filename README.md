@@ -244,12 +244,12 @@ docker compose down
 ## Milestone Progress
 
 - [x] M0 — Project foundation, FastAPI /health
-- [ ] M1 — ML forecasting model
-- [ ] M2 — RAG pipeline
-- [ ] M3 — /ask RAG endpoint
-- [ ] M4 — Agent + tools
-- [ ] M5 — Fine-tuned severity classifier
-- [ ] M6 — Full integration
+- [x] M1 — ML forecasting model
+- [x] M2 — RAG pipeline
+- [x] M3 — /ask RAG endpoint
+- [x] M4 — Agent + tools
+- [x] M5 — Fine-tuned severity classifier
+- [x] M6 — Full integration
 - [ ] M7 — Tests
 - [ ] M8 — Docker deployment
 
