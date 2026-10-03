@@ -1,0 +1,125 @@
+DOCUMENT: Weather Alert and Warning Definitions
+SOURCE: Educational summary based on National Weather Service (NWS) terminology
+VERSION: 1.0
+SECTIONS: Watches, Warnings, Advisories, Severe Thunderstorm, Tornado, Flood, Winter Weather
+
+---
+
+SECTION: Introduction to Weather Alerts
+
+Weather alerts are official communications issued by meteorological agencies to inform the public about hazardous weather conditions. Understanding the difference between a Watch, a Warning, and an Advisory is critical for public safety.
+
+WATCH: Conditions are FAVORABLE for the hazard to develop. A watch covers a large geographic area and a longer time window (typically 12 to 48 hours). Action: Be prepared. Monitor forecasts. Review your emergency plan.
+
+WARNING: The hazard is IMMINENT or already OCCURRING. A warning is issued when the event is certain or already happening. Action: Take protective action immediately. Seek shelter now.
+
+ADVISORY: Conditions are not as severe as a warning but could still cause inconvenience or low-level hazards. Action: Use caution. Adjust plans accordingly.
+
+---
+
+SECTION: Severe Thunderstorm Watch and Warning
+
+SEVERE THUNDERSTORM WATCH: Atmospheric conditions are favorable for the development of severe thunderstorms in or near the watch area. A severe thunderstorm is defined as one that produces hail of one inch (2.5 cm) or larger in diameter, or wind gusts of 58 miles per hour (93 km/h) or greater, or a tornado. A watch is issued when conditions are ripe but storms have not yet formed.
+
+SEVERE THUNDERSTORM WARNING: A severe thunderstorm is imminent or occurring in the warned area. A warning is issued when a trained spotter, emergency manager, or Doppler radar indicates a severe thunderstorm is occurring. The warning includes the location of the storm, the direction of movement, and the expected time of arrival.
+
+THUNDERSTORM IMPACTS:
+- Large hail can damage vehicles, roofs, crops, and injure people.
+- Severe straight-line winds (wind shear or downbursts) can down trees, power lines, and damage structures, sometimes as severely as a tornado.
+- Lightning is the most frequent severe weather killer. Lightning can strike 10 miles away from the storm.
+- Flash flooding from thunderstorms is the number one storm-related killer in the United States.
+
+---
+
+SECTION: Tornado Watch and Warning
+
+TORNADO WATCH: Tornadoes are possible in and near the watch area. A watch is issued when the atmosphere is loaded with energy -- high instability (CAPE values above 1000 J/kg) and significant wind shear. Watches typically cover multiple counties and last 4 to 8 hours.
+
+TORNADO WARNING: A tornado has been indicated by Doppler radar or spotted by trained storm spotters. A warning is issued for a specific county and is typically valid for 30 to 60 minutes. Take cover immediately in the lowest interior room of a sturdy building, away from windows.
+
+TORNADO EMERGENCY: The most extreme form of a tornado warning. Issued when a confirmed, extremely dangerous tornado is threatening a densely populated area. Catastrophic damage is expected.
+
+TORNADO INTENSITY SCALE (Enhanced Fujita):
+EF0: Wind 65-85 mph. Light damage. Shallow-rooted trees toppled.
+EF1: Wind 86-110 mph. Moderate damage. Roof surfaces peeled. Mobile homes overturned.
+EF2: Wind 111-135 mph. Considerable damage. Roofs torn off. Large trees snapped.
+EF3: Wind 136-165 mph. Severe damage. Entire stories of well-constructed homes destroyed.
+EF4: Wind 166-200 mph. Devastating damage. Entire well-constructed homes levelled.
+EF5: Wind above 200 mph. Incredible damage. Strong-framed houses swept away.
+
+TORNADO SAFETY:
+- Go to the lowest floor of a sturdy building, an interior room away from windows.
+- A basement or interior hallway is ideal.
+- Do NOT shelter under a highway overpass.
+- If caught outdoors, lie flat in a low-lying ditch and cover your head.
+- Mobile homes and vehicles are NOT safe shelters.
+
+---
+
+SECTION: Flash Flood Watch and Warning
+
+FLASH FLOOD WATCH: Conditions are favorable for flash flooding in or near the watch area. Slow-moving thunderstorms, heavy rainfall from a tropical system, or excessive soil saturation can trigger flash floods.
+
+FLASH FLOOD WARNING: Flash flooding is occurring or is imminent. Flash floods can develop within minutes to hours of heavy rainfall. They are extremely dangerous because of the speed at which water levels rise and the force of moving water.
+
+FLOOD WARNING: Flooding of rivers, streams, and other water bodies is occurring or imminent. Unlike flash floods, river floods develop more slowly -- hours to days. They can persist for weeks.
+
+FLOOD FACTS:
+- Just 6 inches (15 cm) of fast-moving water can knock down an adult.
+- 12 inches (30 cm) of water can carry away a small vehicle.
+- 2 feet (60 cm) of rushing water can carry away most SUVs and trucks.
+- Do not attempt to drive through flooded roadways. Turn around, do not drown.
+
+---
+
+SECTION: Winter Weather Alerts
+
+WINTER STORM WATCH: Severe winter weather conditions including heavy snow, sleet, ice accumulation, and/or blizzard conditions are possible within 12 to 48 hours. Accumulations of 6 inches or more of snow, or 1/4 inch or more of ice are typical thresholds.
+
+WINTER STORM WARNING: Severe winter conditions are imminent or occurring. Take action now to be prepared.
+
+BLIZZARD WARNING: Sustained winds or frequent gusts above 35 mph (56 km/h) combined with falling and/or blowing snow reducing visibility to less than 1/4 mile (400 m) for at least 3 hours. Blizzards are life-threatening because of wind chill, whiteout conditions, and the risk of becoming stranded.
+
+WIND CHILL WARNING: Dangerously cold air and wind will combine to create extremely cold wind chills. Wind chill describes how cold the air feels on exposed skin.
+Wind chill formula: Wind Chill = 35.74 + 0.6215T - 35.75(V^0.16) + 0.4275T(V^0.16)
+Where T = air temperature in Fahrenheit, V = wind speed in mph.
+
+ICE STORM WARNING: Significant accumulation of ice from freezing rain of 1/4 inch or more is expected. Ice accumulation is more destructive than snow -- it adds tremendous weight to trees and power lines, causing widespread outages.
+
+---
+
+SECTION: Heat Alerts
+
+EXCESSIVE HEAT WATCH: Conditions are favorable for an excessive heat event in the next 24 to 72 hours. Heat index values of 105 to 110 degrees F (40-43 C) or higher are possible.
+
+EXCESSIVE HEAT WARNING: A period of dangerously hot conditions is imminent. The National Weather Service issues Excessive Heat Warnings when the maximum heat index temperature is expected to be 105 degrees F (40 C) or greater for at least two days, and nighttime air temperatures remain above 75 F (24 C).
+
+HEAT ADVISORY: Heat index values of 100 to 104 F (38-40 C) are forecast during the day for two or more consecutive days.
+
+HEAT INDEX: A measure of how hot it feels when relative humidity is combined with the air temperature. High humidity reduces the body's ability to cool itself through sweating.
+
+Heat-related illnesses:
+HEAT CRAMPS: Muscle pains or spasms in the stomach, arms, or legs. First sign of heat illness.
+HEAT EXHAUSTION: Heavy sweating, weakness, cold/pale/clammy skin, weak pulse, nausea. Move to a cool location. Apply cool wet cloths.
+HEAT STROKE: High body temperature (above 103 F / 39.4 C), hot/red/dry skin, rapid strong pulse, possible unconsciousness. CALL 911 IMMEDIATELY. This is a medical emergency.
+
+---
+
+SECTION: Tropical Weather Alerts
+
+TROPICAL STORM WATCH: Tropical storm conditions (sustained winds 39-73 mph, 63-117 km/h) are possible within the specified area within 48 hours.
+
+TROPICAL STORM WARNING: Tropical storm conditions are expected within the specified area within 36 hours.
+
+HURRICANE WATCH: Hurricane conditions (sustained winds 74 mph or greater, 119 km/h) are possible within the specified area within 48 hours.
+
+HURRICANE WARNING: Hurricane conditions are expected within the specified area within 36 hours.
+
+SAFFIR-SIMPSON HURRICANE WIND SCALE:
+Category 1: Wind 74-95 mph (119-153 km/h). Very dangerous winds producing some damage.
+Category 2: Wind 96-110 mph (154-177 km/h). Extremely dangerous winds causing extensive damage.
+Category 3 (Major): Wind 111-129 mph (178-208 km/h). Devastating damage will occur.
+Category 4 (Major): Wind 130-156 mph (209-251 km/h). Catastrophic damage will occur.
+Category 5 (Major): Wind 157+ mph (252+ km/h). Catastrophic damage. Complete roof failure and wall collapse of many residences.
+
+STORM SURGE: An abnormal rise of water generated by a storm over and above the predicted astronomical tides. Storm surge is the greatest threat to life and property from a hurricane. Even a Category 1 hurricane can produce a life-threatening storm surge.
