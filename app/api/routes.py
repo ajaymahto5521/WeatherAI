@@ -26,8 +26,10 @@ import logging
 import time
 
 from fastapi import APIRouter, HTTPException, Request, status
+from fastapi.concurrency import run_in_threadpool
 
 from app.config import settings
+from app.services.answer_service import get_answer_service
 from app.schemas.api import (
     AskRequest,
     AskResponse,
@@ -116,26 +118,17 @@ async def ask(request: AskRequest) -> AskResponse:
 
     start_time = time.perf_counter()
 
-    # ------------------------------------------------------------------
-    # STUB — replaced in Milestone 3 with real RAG + LLM logic
-    # ------------------------------------------------------------------
-    # For now we return a clearly labelled placeholder so the endpoint
-    # is callable and testable while we build the real components.
-    # ------------------------------------------------------------------
+    try:
+        service = get_answer_service()
+    except FileNotFoundError as exc:
+        # Index not built yet — tell the operator how to fix it.
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)
+        )
 
-    stub_answer = (
-        f"[STUB — Milestone 0] You asked: '{request.question}'. "
-        "The full answer service will be implemented in Milestone 3. "
-        "The RAG retriever, LLM, agent, and tools are not yet connected."
-    )
+    # The service is synchronous (embedding + LLM call), so run it off the event loop.
+    response = await run_in_threadpool(service.answer, request.question)
 
     elapsed_ms = (time.perf_counter() - start_time) * 1000
     logger.info("/ask completed in %.1f ms", elapsed_ms)
-
-    return AskResponse(
-        answer=stub_answer,
-        sources=[],          # No sources yet — RAG not connected
-        tools_used=[],       # No tools yet — agent not connected
-        model_prediction=None,
-        severity=None,
-    )
+    return response
