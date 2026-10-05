@@ -1,12 +1,7 @@
-"""
-app/models/severity.py
-======================
-Inference wrapper for the LoRA-fine-tuned severity classifier (Milestone 5).
+"""Severity classifier: DistilBERT plus the saved LoRA adapter.
 
-Loads the DistilBERT base model, attaches the saved LoRA adapter, and classifies
-weather text as LOW / MODERATE / SEVERE / CRITICAL with a confidence score.
-
-Trained on synthetic data — educational use only.
+Labels weather text LOW / MODERATE / SEVERE / CRITICAL. Trained on synthetic
+data, so treat the output as a demo, not a forecast.
 """
 
 from __future__ import annotations

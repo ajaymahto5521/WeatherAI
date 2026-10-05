@@ -1,16 +1,9 @@
-"""
-training/train_severity.py
-==========================
-Milestone 5: fine-tune DistilBERT with LoRA to classify weather-text severity.
+"""Fine-tune DistilBERT with LoRA to classify weather-text severity.
 
-Run from project root:  python training/train_severity.py
+Run from the project root: python training/train_severity.py
 
-Compares three systems on the held-out test set:
-  1. Untrained baseline  — DistilBERT with a randomly initialised head (≈ chance)
-  2. Keyword heuristic   — hand-written rules (a strong non-ML baseline)
-  3. LoRA fine-tuned     — what we ship
-
-Saves the LoRA adapter + classifier head + label map to models/severity_classifier/.
+Prints test accuracy for an untrained head, a keyword-rule baseline and the
+fine-tuned model, then saves the adapter to models/severity_classifier/.
 """
 
 import json

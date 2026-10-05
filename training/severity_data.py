@@ -1,17 +1,11 @@
-"""
-training/severity_data.py
-=========================
-Synthetic dataset for the severity classifier (LOW / MODERATE / SEVERE / CRITICAL).
+"""Synthetic training data for the severity classifier.
 
-Each example is assembled from: hazard phrase + numeric measurement + impact + advice.
-The numeric ranges and phrase pools overlap in vocabulary across levels (e.g. "rain"
-appears at every level) so the model has to use intensity cues, not one keyword.
+Each example is a hazard phrase, a measurement, an impact and some advice, with
+parts dropped at random. The test split uses hazard and impact wording that
+never appears in training, so the score reflects unseen phrasing rather than
+memorised templates.
 
-The test split holds out whole hazard phrases (and impact phrases) that never
-appear in training, so test accuracy measures generalisation to unseen wording,
-not memorisation of templates.
-
-THIS IS SYNTHETIC. Scores on it say nothing about real-world performance.
+It is all generated text: scores here say nothing about real-world accuracy.
 """
 
 from __future__ import annotations
