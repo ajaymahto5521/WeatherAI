@@ -1,39 +1,10 @@
-"""
-training/train_forecaster.py
-=============================
-Train a next-hour temperature forecasting model — pure numpy/scipy.
+"""Train the next-hour temperature forecaster (numpy models, no scikit-learn).
 
-WHY PURE NUMPY?
----------------
-This project targets environments where scikit-learn's compiled C extensions
-(.pyd/.so files) may be blocked by corporate Application Control policies.
-We implement everything from first principles using only:
-  - numpy  (array math, linear algebra)
-  - scipy  (optimisation helpers)
-  - pandas (data loading, time-series operations)
-  - joblib (model serialisation)
+Compares a persistence baseline, ridge regression and gradient-boosted stumps
+on a chronological 80/20 split, then saves ridge (the best performer) plus the
+boosted model to models/forecaster.joblib.
 
-This is actually MORE instructive — you see exactly what's happening
-inside a linear model, rather than calling a black box.
-
-PROBLEM DEFINITION
-------------------
-Given current weather conditions at time T, predict temperature at T+1h.
-This is a regression problem with a time-series structure.
-
-MODELS IMPLEMENTED
-------------------
-1. Persistence Baseline  — predict(T+1) = temperature(T)   [the "do nothing" model]
-2. Ridge Regression      — linear model with L2 regularisation, solved analytically
-3. Gradient Boosted Stumps — simple additive ensemble of depth-1 decision trees
-
-Usage:
-    python training/train_forecaster.py
-
-Expected output:
-    Persistence Baseline  RMSE: ~1.80°C
-    Ridge Regression      RMSE: ~1.20°C
-    Gradient Boosting     RMSE: ~0.80°C  ← this is our deployed model
+Usage:  python training/train_forecaster.py
 """
 
 import logging
@@ -45,8 +16,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
-# ── Paths ──────────────────────────────────────────────────────────────────
-# Support running from TEMP or any location via WEATHER_AI_ROOT env var.
+# WEATHER_AI_ROOT lets the script run from outside the repo checkout.
 _env_root = os.environ.get("WEATHER_AI_ROOT")
 if _env_root:
     PROJECT_ROOT = Path(_env_root).resolve()
@@ -58,20 +28,16 @@ PROC_DATA_PATH = PROJECT_ROOT / "data" / "processed"
 MODEL_DIR      = PROJECT_ROOT / "models"
 MODEL_PATH     = MODEL_DIR / "forecaster.joblib"
 
-# Add project root to sys.path so we can import app.models.ml_models
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-# Import model classes from the shared module — this ensures the classes
-# are serialised as "app.models.ml_models.RidgeRegression" (resolvable
-# from any module) rather than "__main__.RidgeRegression" (only from script)
+# Must come from the package so the pickle references app.models.ml_models,
+# not __main__.
 from app.models.ml_models import (  # noqa: E402
-    DecisionStump,
     GradientBoostingRegressor,
     RidgeRegression,
 )
 
-# ── Logging ─────────────────────────────────────────────────────────────────
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s | %(levelname)-8s | %(message)s",
@@ -80,12 +46,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-# =============================================================================
-# STEP 1: Load Data
-# =============================================================================
-
 def load_data(path: Path) -> pd.DataFrame:
-    """Load the raw CSV. Time column becomes a DatetimeIndex."""
     logger.info("Loading raw data from %s", path)
     if not path.exists():
         logger.error("Data file not found: %s", path)
@@ -98,27 +59,15 @@ def load_data(path: Path) -> pd.DataFrame:
     return df
 
 
-# =============================================================================
-# STEP 2: Feature Engineering
-# =============================================================================
-
 def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Build model input features from raw weather columns.
+    """Build features at hour T with the temperature at T+1 as `target`.
 
-    Feature groups:
-      A) Lag features         — recent temperature history
-      B) Rolling statistics   — trends and volatility
-      C) Cyclic encoding      — hour/month as sin+cos pairs
-      D) Raw weather features — humidity, radiation, pressure, etc.
-      E) Calendar flags       — is_daytime
-
-    Target: temperature 1 hour ahead (shift -1).
+    Column names must stay in sync with ForecastingModel._build_feature_vector.
     """
     logger.info("Engineering features...")
     feat = pd.DataFrame(index=df.index)
 
-    # A) Lag features
+    # lags
     feat["temp_lag_1h"]  = df["temperature_2m"].shift(1)
     feat["temp_lag_2h"]  = df["temperature_2m"].shift(2)
     feat["temp_lag_3h"]  = df["temperature_2m"].shift(3)
@@ -129,7 +78,7 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     feat["rad_lag_1h"]   = df["shortwave_radiation"].shift(1)
     feat["pres_lag_1h"]  = df["pressure_msl"].shift(1)
 
-    # B) Rolling statistics — .rolling(w).mean() = mean of last w rows
+    # rolling stats
     feat["temp_rmean_3h"]  = df["temperature_2m"].rolling(3,  min_periods=1).mean()
     feat["temp_rmean_6h"]  = df["temperature_2m"].rolling(6,  min_periods=1).mean()
     feat["temp_rmean_12h"] = df["temperature_2m"].rolling(12, min_periods=1).mean()
@@ -137,16 +86,15 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     feat["temp_trend_3h"]  = df["temperature_2m"] - df["temperature_2m"].shift(3)
     feat["rad_rmean_3h"]   = df["shortwave_radiation"].rolling(3, min_periods=1).mean()
 
-    # C) Cyclic encoding — sin+cos avoids discontinuity at cycle boundaries
-    #    hour 23 and hour 0 are adjacent; without encoding they're 23 apart numerically
-    feat["hour_sin"]       = np.sin(2 * np.pi * df.index.hour        / 24)
-    feat["hour_cos"]       = np.cos(2 * np.pi * df.index.hour        / 24)
-    feat["month_sin"]      = np.sin(2 * np.pi * df.index.month       / 12)
-    feat["month_cos"]      = np.cos(2 * np.pi * df.index.month       / 12)
-    feat["doy_sin"]        = np.sin(2 * np.pi * df.index.day_of_year / 365)
-    feat["doy_cos"]        = np.cos(2 * np.pi * df.index.day_of_year / 365)
+    # cyclic time encodings (so hour 23 and hour 0 are neighbours)
+    feat["hour_sin"]  = np.sin(2 * np.pi * df.index.hour        / 24)
+    feat["hour_cos"]  = np.cos(2 * np.pi * df.index.hour        / 24)
+    feat["month_sin"] = np.sin(2 * np.pi * df.index.month       / 12)
+    feat["month_cos"] = np.cos(2 * np.pi * df.index.month       / 12)
+    feat["doy_sin"]   = np.sin(2 * np.pi * df.index.day_of_year / 365)
+    feat["doy_cos"]   = np.cos(2 * np.pi * df.index.day_of_year / 365)
 
-    # D) Raw weather features
+    # raw conditions
     feat["humidity"]    = df["relative_humidity_2m"]
     feat["wind_speed"]  = df["windspeed_10m"]
     feat["precip"]      = df["precipitation"]
@@ -155,47 +103,29 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     feat["radiation"]   = df["shortwave_radiation"]
     feat["evapotrans"]  = df["et0_fao_evapotranspiration"]
 
-    # E) Calendar flag
-    feat["is_daytime"]  = ((df.index.hour >= 6) & (df.index.hour <= 20)).astype(float)
+    feat["is_daytime"] = ((df.index.hour >= 6) & (df.index.hour <= 20)).astype(float)
 
-    # TARGET — 1 hour ahead temperature
-    # shift(-1): at row T, this is the temperature at T+1
     feat["target"] = df["temperature_2m"].shift(-1)
 
     n_before = len(feat)
-    feat     = feat.dropna()
+    feat = feat.dropna()
     logger.info("Features: %d rows x %d cols  (%d rows dropped for NaN)",
                 len(feat), len(feat.columns) - 1, n_before - len(feat))
     return feat
 
 
-# =============================================================================
-# STEP 3: Temporal Train/Test Split
-# =============================================================================
-
-def temporal_split(
-    feat: pd.DataFrame,
-    test_fraction: float = 0.20,
-) -> tuple:
-    """
-    Chronological 80/20 split — the only correct way to split time-series.
-
-    NO random shuffling. The test set must always be AFTER the training set
-    in time — mimicking real deployment where you train on history and
-    predict the future.
-    """
-    target_col   = "target"
-    feature_cols = [c for c in feat.columns if c != target_col]
+def temporal_split(feat: pd.DataFrame, test_fraction: float = 0.20) -> tuple:
+    """Chronological split; the test set is the most recent slice."""
+    feature_cols = [c for c in feat.columns if c != "target"]
 
     split_idx = int(len(feat) * (1 - test_fraction))
-
     train = feat.iloc[:split_idx]
-    test  = feat.iloc[split_idx:]
+    test = feat.iloc[split_idx:]
 
     X_train = train[feature_cols].values.astype(np.float64)
-    y_train = train[target_col].values.astype(np.float64)
-    X_test  = test[feature_cols].values.astype(np.float64)
-    y_test  = test[target_col].values.astype(np.float64)
+    y_train = train["target"].values.astype(np.float64)
+    X_test = test[feature_cols].values.astype(np.float64)
+    y_test = test["target"].values.astype(np.float64)
 
     logger.info("Train: %d rows  (%s to %s)",
                 len(train), train.index[0].date(), train.index[-1].date())
@@ -205,49 +135,20 @@ def temporal_split(
     return X_train, y_train, X_test, y_test, feature_cols, train, test
 
 
-# =============================================================================
-# STEP 4: Persistence Baseline
-# =============================================================================
-
 def persistence_baseline(X_test: np.ndarray, feature_cols: list) -> np.ndarray:
-    """
-    Naive persistence model: predict next-hour temp = current temp.
+    """Predict that the temperature stays put (temp_lag_1h is the temp at T)."""
+    return X_test[:, feature_cols.index("temp_lag_1h")]
 
-    temp_lag_1h holds the temperature at T (one step back from T+1).
-    So using it as the prediction IS the persistence forecast.
-
-    This is the minimum bar every ML model must clear.
-    If your model can't beat "temperature won't change", it's useless.
-    """
-    idx = feature_cols.index("temp_lag_1h")
-    return X_test[:, idx]
-
-
-# =============================================================================
-# STEP 5: Ridge Regression and Gradient Boosting
-# (Classes imported from app.models.ml_models — see that file for full docs)
-# =============================================================================
-
-
-# =============================================================================
-# STEP 7: Metrics
-# =============================================================================
 
 def rmse(actual: np.ndarray, predicted: np.ndarray) -> float:
-    """Root Mean Squared Error in the same units as the target (°C)."""
     return float(np.sqrt(np.mean((actual - predicted) ** 2)))
 
 
 def mae(actual: np.ndarray, predicted: np.ndarray) -> float:
-    """Mean Absolute Error — average magnitude of errors in °C."""
     return float(np.mean(np.abs(actual - predicted)))
 
 
 def r2(actual: np.ndarray, predicted: np.ndarray) -> float:
-    """
-    R² — fraction of variance explained.
-    1.0 = perfect, 0.0 = as good as predicting the mean, <0 = worse than mean.
-    """
     ss_res = np.sum((actual - predicted) ** 2)
     ss_tot = np.sum((actual - actual.mean()) ** 2)
     return float(1 - ss_res / ss_tot)
@@ -259,7 +160,7 @@ def print_results_table(
     ridge_preds: np.ndarray,
     gb_preds: np.ndarray,
 ) -> dict:
-    """Print a comparison table and return the metrics dict."""
+    """Print the comparison table and return the metrics dict."""
     results = {
         "baseline": {
             "rmse": round(rmse(y_test, base_preds),  4),
@@ -309,10 +210,6 @@ def print_results_table(
     return results
 
 
-# =============================================================================
-# MAIN
-# =============================================================================
-
 def main() -> None:
     print()
     print("=" * 68)
@@ -321,23 +218,18 @@ def main() -> None:
     print("=" * 68)
     print()
 
-    # 1. Load
     df = load_data(RAW_DATA_PATH)
 
-    # 2. Feature engineering
     feat = engineer_features(df)
     PROC_DATA_PATH.mkdir(parents=True, exist_ok=True)
     feat.to_csv(PROC_DATA_PATH / "features.csv")
     logger.info("Feature matrix saved to data/processed/features.csv")
 
-    # 3. Temporal split
     X_train, y_train, X_test, y_test, feature_cols, train_df, test_df = \
         temporal_split(feat, test_fraction=0.20)
 
-    # 4. Persistence baseline
     base_preds = persistence_baseline(X_test, feature_cols)
 
-    # 5a. Train Ridge Regression
     print()
     logger.info("Training Ridge Regression (lambda=1.0)...")
     ridge = RidgeRegression(alpha=1.0)
@@ -345,7 +237,6 @@ def main() -> None:
     ridge_preds = ridge.predict(X_test)
     logger.info("Ridge done. RMSE=%.4f", rmse(y_test, ridge_preds))
 
-    # 5b. Train Gradient Boosting
     print()
     logger.info("Training Gradient Boosting (200 stumps, lr=0.1, subsample=0.8)...")
     gb = GradientBoostingRegressor(
@@ -358,15 +249,14 @@ def main() -> None:
     gb_preds = gb.predict(X_test)
     logger.info("Gradient Boosting done. RMSE=%.4f", rmse(y_test, gb_preds))
 
-    # 6. Evaluate
     results = print_results_table(y_test, base_preds, ridge_preds, gb_preds)
 
-    # 7. Save the best model (Ridge wins — linear problem suits Ridge well) + all metadata
+    # Ridge is what gets served; the boosted model is kept for comparison.
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
     artifact = {
-        "model":          ridge,             # Ridge is the deployed model (best RMSE)
-        "model_type":     "RidgeRegression", # label what's deployed
-        "gb_model":       gb,                # also save GB for reference/comparison
+        "model":          ridge,
+        "model_type":     "RidgeRegression",
+        "gb_model":       gb,
         "feature_cols":   feature_cols,
         "metadata": {
             "location":    "New Delhi, India",

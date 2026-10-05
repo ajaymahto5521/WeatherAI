@@ -1,10 +1,6 @@
-"""
-app/rag/ingestion.py
-====================
-Offline pipeline: load reference docs -> chunk -> embed -> store.
+"""Load reference docs -> chunk -> embed -> store (run via scripts/ingest_documents.py).
 
-Run via scripts/ingest_documents.py. The fitted embedding model is saved next
-to the local index so retrieval embeds queries with the same vocabulary.
+The fitted embedder is saved next to the index so queries use the same vocabulary.
 """
 
 from __future__ import annotations

@@ -1,26 +1,4 @@
-"""
-app/api/routes.py
-=================
-API route definitions for the Weather Intelligence Assistant.
-
-This file defines WHAT URLs exist and WHAT they do.
-The actual business logic lives in app/services/ and app/agents/ —
-routes are thin wrappers that handle HTTP concerns only:
-  - parse the request
-  - call the service
-  - return the response
-  - handle errors
-
-Why separate routes from logic?
-  Routes change when the API contract changes.
-  Logic changes when the business rules change.
-  Keeping them separate means you can test logic without HTTP,
-  and change URLs without touching business logic.
-
-Current routes:
-  GET  /health   — liveness check (no auth, always public)
-  POST /ask      — main question-answering endpoint (Milestone 3+)
-"""
+"""HTTP routes: /health and /ask."""
 
 import logging
 import time
@@ -38,19 +16,10 @@ from app.schemas.api import (
     SourceDocument,
 )
 
-# Each module gets its own logger named after the module.
-# Log messages from this file show "app.api.routes" in the output.
 logger = logging.getLogger(__name__)
 
-# APIRouter is like a mini-application — a collection of related routes.
-# We create it here and register it on the main FastAPI app in main.py.
-# The prefix "/api/v1" will be added when we register it (in main.py).
 router = APIRouter()
 
-
-# =============================================================================
-# GET /health
-# =============================================================================
 
 @router.get(
     "/health",
@@ -63,28 +32,14 @@ router = APIRouter()
     tags=["Infrastructure"],
 )
 async def health_check() -> HealthResponse:
-    """
-    Liveness endpoint.
-
-    This should:
-    - Always return 200 if the process is alive.
-    - Respond in < 50ms (no DB or LLM calls).
-    - Be accessible without authentication.
-
-    In later milestones we can add a 'readiness' check that also
-    verifies DB connectivity and model loading.
-    """
+    """Liveness check; deliberately doesn't touch the DB or LLM."""
     logger.debug("Health check called.")
     return HealthResponse(
         status="ok",
         environment=settings.app_env,
-        version="0.1.0",  # We'll make this dynamic in a later milestone
+        version="0.1.0",
     )
 
-
-# =============================================================================
-# POST /ask
-# =============================================================================
 
 @router.post(
     "/ask",
@@ -102,18 +57,7 @@ async def health_check() -> HealthResponse:
     tags=["Assistant"],
 )
 async def ask(request: AskRequest) -> AskResponse:
-    """
-    Main question-answering endpoint.
-
-    Current state (Milestone 0): returns a placeholder response.
-    The real implementation is wired in during Milestones 3–6.
-
-    Milestone progression:
-      M0  — placeholder stub (this code)
-      M3  — RAG retrieval + LLM answer
-      M4  — agent with live weather + forecast tools
-      M6  — full integration with severity classifier
-    """
+    """Answer a weather question via the agent (RAG, tools, severity)."""
     logger.info("Received /ask request: question='%s'", request.question[:80])
 
     start_time = time.perf_counter()
@@ -121,12 +65,12 @@ async def ask(request: AskRequest) -> AskResponse:
     try:
         service = get_answer_service()
     except FileNotFoundError as exc:
-        # Index not built yet — tell the operator how to fix it.
+        # vector index hasn't been built yet
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)
         )
 
-    # The service is synchronous (embedding + LLM call), so run it off the event loop.
+    # service is blocking (embeddings + LLM), keep it off the event loop
     response = await run_in_threadpool(service.answer, request.question)
 
     elapsed_ms = (time.perf_counter() - start_time) * 1000

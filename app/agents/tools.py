@@ -1,20 +1,7 @@
-"""
-app/agents/tools.py
-===================
-Tools the agent can call. Each tool is a plain function returning a ToolResult:
+"""Agent tools: RAG search, live weather (OpenWeatherMap), Delhi next-hour forecast.
 
-  text  — what the LLM sees (short, factual)
-  data  — structured payload the API surfaces (e.g. ModelPrediction)
-
-Tools never raise to the agent: failures come back as text so the LLM can
-explain them to the user instead of the request crashing.
-
-Tools
------
-  search_weather_knowledge — RAG over the reference documents
-  get_live_weather         — current conditions for any city (OpenWeatherMap)
-  forecast_temperature     — next-hour temperature for New Delhi (trained model),
-                             fed with recent observations from Open-Meteo
+ToolResult.text goes to the LLM, .data to the API. Tools return failures as
+text instead of raising.
 """
 
 from __future__ import annotations
@@ -44,15 +31,11 @@ class ToolResult:
 
 
 def _http_get_json(url: str, params: dict) -> dict:
-    """Single HTTP seam so tests can stub the network."""
+    """All network calls go through here so tests can stub it."""
     resp = requests.get(url, params=params, timeout=HTTP_TIMEOUT)
     resp.raise_for_status()
     return resp.json()
 
-
-# =============================================================================
-# Live weather (OpenWeatherMap)
-# =============================================================================
 
 def get_live_weather(city: str) -> ToolResult:
     if not settings.openweather_api_key:
@@ -76,7 +59,7 @@ def get_live_weather(city: str) -> ToolResult:
         f"(feels like {main.get('feels_like')}°C), {desc}, humidity {main.get('humidity')}%, "
         f"wind {wind.get('speed')} m/s, pressure {main.get('pressure')} hPa."
     )
-    # Text in the style the severity classifier was trained on (km/h, mm, °C).
+    # same phrasing/units the severity classifier was trained on
     wind_kmh = round((wind.get("speed") or 0) * 3.6)
     rain_mm = (d.get("rain") or {}).get("1h", 0)
     severity_text = (
@@ -89,10 +72,6 @@ def get_live_weather(city: str) -> ToolResult:
     )
 
 
-# =============================================================================
-# Temperature forecast (trained model)
-# =============================================================================
-
 HOURLY_VARS = [
     "temperature_2m", "relative_humidity_2m", "windspeed_10m", "precipitation",
     "cloudcover", "pressure_msl", "shortwave_radiation", "et0_fao_evapotranspiration",
@@ -101,10 +80,7 @@ MIN_HISTORY = 25  # need 24h lag + current row
 
 
 def build_conditions(hourly: dict[str, list], i: int) -> WeatherConditions:
-    """
-    Build model inputs for row i of an Open-Meteo hourly block. Mirrors
-    engineer_features() in training/train_forecaster.py exactly.
-    """
+    """Model inputs for row i of an Open-Meteo hourly block; must match engineer_features() in training/train_forecaster.py."""
     if i < 24:
         raise ValueError("need at least 24 prior hours of history")
     t = hourly["temperature_2m"]
@@ -189,10 +165,6 @@ def forecast_temperature(now: datetime | None = None) -> ToolResult:
     )
 
 
-# =============================================================================
-# RAG
-# =============================================================================
-
 def make_rag_tool(retriever) -> Callable[[str], ToolResult]:
     def search_weather_knowledge(query: str) -> ToolResult:
         hits = [h for h in retriever.retrieve(query) if h.score >= 0.05]
@@ -208,10 +180,6 @@ def make_rag_tool(retriever) -> Callable[[str], ToolResult]:
         ]})
     return search_weather_knowledge
 
-
-# =============================================================================
-# Tool schemas (OpenAI function-calling format)
-# =============================================================================
 
 def _schema(name: str, description: str, props: dict, required: list[str]) -> dict:
     return {"type": "function", "function": {

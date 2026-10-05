@@ -1,8 +1,4 @@
-"""
-app/rag/retrieval.py
-====================
-Query-time retrieval: embed the question, search the store, return sources.
-"""
+"""Query-time retrieval: embed the question, search the store."""
 
 from __future__ import annotations
 
