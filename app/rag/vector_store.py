@@ -1,16 +1,6 @@
-"""
-app/rag/vector_store.py
-=======================
-Storage + similarity search for chunk embeddings.
+"""Chunk storage and similarity search: local numpy files or PostgreSQL/pgvector.
 
-Two interchangeable backends share one interface:
-
-  LocalVectorStore   — numpy matrix persisted to disk (no database needed).
-                       Used for development, tests, and as a fallback when
-                       PostgreSQL is unreachable.
-  PgVectorStore      — PostgreSQL + pgvector (production target).
-
-Both assume embeddings are L2-normalised, so cosine similarity == dot product.
+Embeddings are assumed L2-normalised, so cosine similarity is a dot product.
 """
 
 from __future__ import annotations
@@ -45,10 +35,6 @@ class VectorStore(Protocol):
     def search(self, query_embedding: np.ndarray, top_k: int = 4) -> list[SearchHit]: ...
     def count(self) -> int: ...
 
-
-# =============================================================================
-# Local (file-backed) store
-# =============================================================================
 
 class LocalVectorStore:
     """Embeddings in a numpy array, chunk metadata in JSON. Brute-force search."""
@@ -102,10 +88,6 @@ class LocalVectorStore:
     def count(self) -> int:
         return len(self._chunks)
 
-
-# =============================================================================
-# PostgreSQL + pgvector store
-# =============================================================================
 
 class PgVectorStore:
     """
@@ -193,10 +175,6 @@ class PgVectorStore:
             cur.execute(f"SELECT COUNT(*) FROM {self.TABLE}")
             return cur.fetchone()[0]
 
-
-# =============================================================================
-# Factory
-# =============================================================================
 
 def create_vector_store(
     embedding_dim: int,

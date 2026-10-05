@@ -1,19 +1,6 @@
-"""
-app/agents/agent.py
-===================
-Milestone 4: tool-calling agent.
+"""Tool-calling agent: a plain loop (no LangGraph) over an injected chat function.
 
-The LLM sees the question plus tool schemas and decides which tools to call.
-We execute them, feed results back, and repeat until it answers (capped at
-MAX_STEPS). The response records which tools ran, the RAG sources, and any
-model prediction.
-
-NOTE: README planned LangGraph; langgraph isn't installed here and this loop
-is the same ReAct pattern in ~40 lines. The chat function is injected, so
-swapping in a LangGraph graph later only touches this file.
-
-A chat function takes (messages, tool_schemas) and returns an OpenAI-style
-assistant message dict: {"content": str|None, "tool_calls": [...]|None}.
+chat(messages, tool_schemas) returns {"content": str|None, "tool_calls": [...]|None}.
 """
 
 from __future__ import annotations
@@ -131,7 +118,7 @@ class WeatherAgent:
                     prediction = ModelPrediction(**result.data)
                 messages.append({"role": "tool", "tool_call_id": call["id"], "content": result.text})
         else:
-            # Step cap hit while the model was still calling tools: force a final answer.
+            # step cap hit mid tool-calling: force a final answer
             messages.append({"role": "user", "content": "Answer now using what you have."})
             text = (self.chat(messages, [])["content"] or "").strip()
 
@@ -140,8 +127,7 @@ class WeatherAgent:
             sources=list(sources.values()),
             tools_used=tools_used,
             model_prediction=prediction,
-            # Only set from observed conditions (live weather); definitional answers
-            # like "what is a tornado warning" must not be labelled SEVERE.
+            # live-weather text only; "what is a tornado warning" must not come back SEVERE
             severity=self._classify(severity_text),
         )
 

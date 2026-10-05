@@ -1,16 +1,7 @@
-"""
-app/services/answer_service.py
-==============================
-Milestone 3: ties retrieval and the LLM into a grounded answer.
+"""RAG-only answering: retrieve, prompt the LLM with numbered context, return sources.
 
-Flow:  question -> Retriever (top-k chunks) -> prompt with numbered context
-       -> LLM -> AskResponse(answer, sources, tools_used)
-
-Graceful degradation:
-  - No LLM configured (no Azure key / openai package missing / call fails):
-    return the best retrieved passages verbatim as an extractive answer.
-  - No relevant chunks (all scores below MIN_SCORE): say so instead of
-    letting the LLM answer from memory.
+Without an LLM (or if the call fails) the top passages are returned verbatim.
+If nothing scores above MIN_SCORE we say so rather than let the LLM guess.
 """
 
 from __future__ import annotations
@@ -38,12 +29,12 @@ SYSTEM_PROMPT = (
     "use plain language."
 )
 
-# An LLM is any function (system_prompt, user_prompt) -> answer text.
+# (system_prompt, user_prompt) -> answer text
 LLMFunc = Callable[[str, str], str]
 
 
 def azure_llm() -> LLMFunc | None:
-    """Build an Azure OpenAI chat function, or None if not configured/installed."""
+    """Azure OpenAI chat function, or None if not configured/installed."""
     if not (settings.azure_openai_api_key and settings.azure_openai_endpoint):
         return None
     try:
@@ -100,7 +91,7 @@ class AnswerService:
             text = "(LLM unavailable — showing the most relevant reference passages)\n\n" + \
                 "\n\n".join(h.chunk.text for h in hits[:2])
 
-        # De-duplicate sources, keeping the best score per (document, section).
+        # one source per (document, section), best score wins
         best: dict[tuple[str, str], float] = {}
         for h in hits:
             key = (h.chunk.document_name, h.chunk.section)
@@ -116,11 +107,7 @@ _service: AnswerService | None = None
 
 
 def get_answer_service():
-    """
-    Lazily build the process-wide answerer (loads the index on first use).
-    Returns the tool-calling agent when an LLM is configured, otherwise the
-    RAG-only AnswerService. Both expose .answer(question) -> AskResponse.
-    """
+    """Process-wide answerer, built on first use: the agent if an LLM is configured, else AnswerService."""
     global _service
     if _service is None:
         from app.agents.agent import create_agent
