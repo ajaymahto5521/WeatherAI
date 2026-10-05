@@ -42,14 +42,16 @@ check("version present", "version" in body)
 print(f"  body: {json.dumps(body)}")
 
 print("POST /ask (valid)")
+# 200 once the RAG index is built, 503 with an ingest hint before that
 r = client.post("/ask", json={"question": "What does a tornado watch mean?"})
-check("status 200", r.status_code == 200, f"got {r.status_code}")
+check("200 or 503", r.status_code in (200, 503), f"got {r.status_code}")
 body = r.json()
-check("has 'answer' key", "answer" in body)
-check("answer is non-empty", bool(body.get("answer", "")))
-check("has 'sources' list", isinstance(body.get("sources"), list))
-check("has 'tools_used' list", isinstance(body.get("tools_used"), list))
-print(f"  answer: {body.get('answer', '')[:100]}...")
+if r.status_code == 200:
+    check("has answer", bool(body.get("answer")))
+    check("sources is a list", isinstance(body.get("sources"), list))
+    check("tools_used is a list", isinstance(body.get("tools_used"), list))
+else:
+    check("503 explains how to fix it", "ingest" in body.get("detail", ""))
 
 print("POST /ask (invalid)")
 for label, payload in [

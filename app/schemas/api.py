@@ -97,5 +97,5 @@ class ErrorResponse(BaseModel):
     detail: str = Field(description="Human-readable explanation of what went wrong.")
     request_id: str | None = Field(
         default=None,
-        description="Trace ID for correlating logs. Added in a later milestone."
+        description="Trace ID for correlating logs. Not populated yet."
     )
