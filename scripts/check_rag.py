@@ -27,7 +27,7 @@ def check(name, cond, detail=""):
 with tempfile.TemporaryDirectory() as tmp:
     res = ingest(index_dir=Path(tmp), backend="local", embedding_backend="tfidf")
     check("chunks ingested", res.n_chunks > 20, str(res))
-    check("all 3 documents ingested", res.n_documents == 3, str(res))
+    check("all 6 documents ingested", res.n_documents == 6, str(res))
 
     r = Retriever(index_dir=Path(tmp), backend="local")
     cases = [
@@ -35,6 +35,9 @@ with tempfile.TemporaryDirectory() as tmp:
          "weather_alerts_definitions"),
         ("When does the southwest monsoon arrive in India?", "india_weather_guide"),
         ("What is relative humidity and dew point?", "meteorological_terms"),
+        ("At what wind speed must tower cranes stop working?", "severe_wind_and_storm_sop"),
+        ("How much rest is required at 41 degrees?", "heatwave_safety_protocol"),
+        ("Where is the muster point during a flood evacuation?", "flood_emergency_sop"),
     ]
     for q, doc in cases:
         hits = r.retrieve(q)

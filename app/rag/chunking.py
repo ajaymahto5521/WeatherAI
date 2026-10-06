@@ -17,14 +17,6 @@ class Chunk:
     char_start: int      # approximate offsets into the original text
     char_end: int
 
-    @property
-    def word_count(self) -> int:
-        return len(self.text.split())
-
-    @property
-    def char_count(self) -> int:
-        return len(self.text)
-
 
 class RecursiveCharacterSplitter:
     """Splits on the coarsest separator that works, recursing to finer ones.
@@ -45,30 +37,18 @@ class RecursiveCharacterSplitter:
         self.chunk_overlap = chunk_overlap
 
     def split_text(self, text: str) -> list[str]:
-        return self._split(text, self.SEPARATORS)
+        return self._merge(self._pieces(text, self.SEPARATORS))
 
-    def _split(self, text: str, separators: list[str]) -> list[str]:
-        if not text.strip():
-            return []
+    def _pieces(self, text: str, separators: list[str]) -> list[str]:
+        """Cut at the coarsest separator, going finer only for pieces still over chunk_size."""
+        text = text.strip()
         if len(text) <= self.chunk_size:
-            return [text.strip()]
+            return [text] if text else []
 
-        separator = separators[0] if separators else ""
-        remaining = separators[1:]
-
-        pieces = text.split(separator) if separator else list(text)
-
-        good_pieces: list[str] = []
-        for piece in pieces:
-            piece = piece.strip()
-            if not piece:
-                continue
-            if len(piece) <= self.chunk_size:
-                good_pieces.append(piece)
-            else:
-                good_pieces.extend(self._split(piece, remaining))
-
-        return self._merge(good_pieces)
+        pieces: list[str] = []
+        for part in text.split(separators[0]) if separators[0] else list(text):
+            pieces.extend(self._pieces(part, separators[1:]))
+        return pieces
 
     def _merge(self, pieces: list[str]) -> list[str]:
         chunks: list[str] = []
@@ -85,6 +65,8 @@ class RecursiveCharacterSplitter:
 
                 # seed the next chunk with the tail of this one
                 overlap_text = chunk_text[-self.chunk_overlap:]
+                if " " in overlap_text:  # don't start the next chunk mid-word
+                    overlap_text = overlap_text.split(" ", 1)[1]
                 current = [overlap_text] if overlap_text.strip() else []
                 current_len = len(overlap_text)
 
@@ -99,67 +81,80 @@ class RecursiveCharacterSplitter:
         return chunks
 
 
-class SectionAwareSplitter:
-    """Chunks a reference doc and tags each chunk with its SECTION: title.
+# "## Heading" (markdown, any depth) or the older "SECTION: title" line
+HEADING = re.compile(r"^(?:(#{1,6})[ 	]+(.+?)|SECTION:[ 	]*(.+?))[ 	]*$", re.MULTILINE)
+SOURCE = re.compile(r"^\**(?:SOURCE|Regulatory Standard):\**[ 	]*(.+?)[ 	]*$", re.MULTILINE)
 
-    Docs start with a DOCUMENT:/SOURCE: header and use "SECTION: <title>" lines.
+
+def clean_markdown(text: str) -> str:
+    """Plain text for embedding: no bold markers or rules, tables turned into sentences.
+
+    Each table row becomes "Column: value; Column: value" so a chunk still
+    says what its numbers mean once it is cut away from the header row.
+    """
+    out: list[str] = []
+    header: list[str] | None = None
+    for line in text.replace("**", "").splitlines():
+        if line.lstrip().startswith("|"):
+            cells = [c.strip() for c in line.strip().strip("|").split("|")]
+            if header is None:
+                header = cells
+            elif not all(re.fullmatch(r":?-+:?", c) for c in cells):  # skip the |---| row
+                out.append("; ".join(f"{h}: {c}" for h, c in zip(header, cells)))
+        else:
+            header = None
+            if line.strip() != "---":
+                out.append(line)
+    return "\n".join(out)
+
+
+class SectionAwareSplitter:
+    """Splits a document at its headings, then chunks each section on its own.
+
+    Every chunk starts with its section path, e.g. "Section 3: Crane Protocols >
+    3.1 Tower Crane Cut-off", so it still makes sense when read in isolation.
     """
 
     def __init__(self, chunk_size: int = 500, chunk_overlap: int = 50):
-        self._splitter = RecursiveCharacterSplitter(
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
-        )
+        self._splitter = RecursiveCharacterSplitter(chunk_size, chunk_overlap)
 
     def split_document(self, file_path: Path) -> list[Chunk]:
         text = file_path.read_text(encoding="utf-8")
-        document_name = file_path.name
-        source = self._parse_header(text).get("SOURCE", "Unknown source")
+        source_match = SOURCE.search(text[:1000])
+        source = source_match.group(1) if source_match else "Unknown source"
+
+        # (section path, start of its body, end of its body)
+        headings = list(HEADING.finditer(text))
+        bounds = [0] + [m.start() for m in headings] + [len(text)]
+        titles = ["Introduction"]
+        stack: list[tuple[int, str]] = []  # (heading level, title) of the open headings
+        for m in headings:
+            level = len(m.group(1)) if m.group(1) else 2
+            while stack and stack[-1][0] >= level:
+                stack.pop()
+            stack.append((level, m.group(2) or m.group(3)))
+            # the document's own "# Title" is left out of the path unless it is the only heading
+            path = [t for lv, t in stack if lv > 1] or [stack[-1][1]]
+            titles.append(" > ".join(path))
 
         chunks: list[Chunk] = []
-        current_section = "Introduction"
-        char_pos = 0
-
-        for i, raw_text in enumerate(self._splitter.split_text(text)):
-            section_match = re.search(r"SECTION:\s*([^\n]{1,80})", raw_text)
-            if section_match:
-                # cut at first '.' so a header with no newline doesn't swallow body text
-                raw_section = re.split(r"[.\n]", section_match.group(1).strip())[0].strip()
-                if raw_section:
-                    current_section = raw_section
-
-            # offsets are approximate: overlap and whitespace stripping mean the
-            # chunk may not appear verbatim in the original
-            char_start = text.find(raw_text[:50], char_pos)
-            if char_start == -1:
-                char_start = char_pos
-            char_end = char_start + len(raw_text)
-            char_pos = max(char_pos, char_start)
-
-            chunks.append(
-                Chunk(
-                    text=raw_text,
-                    document_name=document_name,
+        for i, (title, start, end) in enumerate(zip(titles, bounds, bounds[1:])):
+            body = text[start:end]
+            if i:  # every part after the first begins with its own heading line
+                body = HEADING.sub("", body, count=1)
+            for piece in self._splitter.split_text(clean_markdown(body)):
+                # offsets are approximate: cleaning and overlap change the text
+                char_start = max(text.find(piece[:30], start, end), start)
+                chunks.append(Chunk(
+                    text=f"{title}\n{piece}",
+                    document_name=file_path.name,
                     source=source,
-                    section=current_section,
-                    chunk_index=i,
+                    section=title,
+                    chunk_index=len(chunks),
                     char_start=char_start,
-                    char_end=char_end,
-                )
-            )
-
+                    char_end=char_start + len(piece),
+                ))
         return chunks
-
-    def _parse_header(self, text: str) -> dict[str, str]:
-        meta: dict[str, str] = {}
-        header_pattern = re.compile(r"^([A-Z]+):\s*(.+)$", re.MULTILINE)
-
-        for match in header_pattern.finditer(text[:500]):
-            key = match.group(1).strip()
-            if key in ("DOCUMENT", "SOURCE", "VERSION"):
-                meta[key] = match.group(2).strip()
-
-        return meta
 
 
 def chunk_directory(
