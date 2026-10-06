@@ -10,6 +10,9 @@ Q = "What is the difference between a tornado watch and a tornado warning?"
     (Q, "weather_alerts_definitions"),
     ("When does the southwest monsoon arrive in India?", "india_weather_guide"),
     ("What is relative humidity and dew point?", "meteorological_terms"),
+    ("At what wind speed must tower crane operations stop?", "severe_wind_and_storm_sop"),
+    ("How much rest do workers need when it is 41 degrees?", "heatwave_safety_protocol"),
+    ("What water depth triggers site evacuation?", "flood_emergency_sop"),
 ])
 def test_retrieval_finds_right_document(retriever, question, doc):
     assert any(doc in h.chunk.document_name for h in retriever.retrieve(question))
