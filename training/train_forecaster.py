@@ -8,7 +8,6 @@ Usage:  python training/train_forecaster.py
 """
 
 import logging
-import os
 import sys
 from pathlib import Path
 
@@ -16,12 +15,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
-# WEATHER_AI_ROOT lets the script run from outside the repo checkout.
-_env_root = os.environ.get("WEATHER_AI_ROOT")
-if _env_root:
-    PROJECT_ROOT = Path(_env_root).resolve()
-else:
-    PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 RAW_DATA_PATH  = PROJECT_ROOT / "data" / "raw" / "delhi_weather_hourly.csv"
 PROC_DATA_PATH = PROJECT_ROOT / "data" / "processed"
@@ -154,70 +148,36 @@ def r2(actual: np.ndarray, predicted: np.ndarray) -> float:
     return float(1 - ss_res / ss_tot)
 
 
-def print_results_table(
-    y_test: np.ndarray,
-    base_preds: np.ndarray,
-    ridge_preds: np.ndarray,
-    gb_preds: np.ndarray,
-) -> dict:
+def print_results_table(y_test, base_preds, ridge_preds, gb_preds) -> dict:
     """Print the comparison table and return the metrics dict."""
     results = {
-        "baseline": {
-            "rmse": round(rmse(y_test, base_preds),  4),
-            "mae":  round(mae(y_test,  base_preds),  4),
-        },
-        "ridge": {
-            "rmse": round(rmse(y_test, ridge_preds), 4),
-            "mae":  round(mae(y_test,  ridge_preds), 4),
-            "r2":   round(r2(y_test,   ridge_preds), 4),
-        },
-        "gradient_boosting": {
-            "rmse": round(rmse(y_test, gb_preds),    4),
-            "mae":  round(mae(y_test,  gb_preds),    4),
-            "r2":   round(r2(y_test,   gb_preds),    4),
-        },
+        "baseline": {"rmse": rmse(y_test, base_preds), "mae": mae(y_test, base_preds)},
+        "ridge": {"rmse": rmse(y_test, ridge_preds), "mae": mae(y_test, ridge_preds),
+                  "r2": r2(y_test, ridge_preds)},
+        "gradient_boosting": {"rmse": rmse(y_test, gb_preds), "mae": mae(y_test, gb_preds),
+                              "r2": r2(y_test, gb_preds)},
     }
+    results = {k: {m: round(v, 4) for m, v in d.items()} for k, d in results.items()}
+    base_rmse = results["baseline"]["rmse"]
 
-    base_rmse  = results["baseline"]["rmse"]
-    ridge_rmse = results["ridge"]["rmse"]
-    gb_rmse    = results["gradient_boosting"]["rmse"]
+    rows = [
+        ("Persistence Baseline", "baseline"),
+        ("Ridge Regression (deployed)", "ridge"),
+        ("Gradient Boosting", "gradient_boosting"),
+    ]
+    print(f"\n  {'Model':<30} {'RMSE (°C)':>10} {'MAE (°C)':>10} {'R²':>8} {'vs baseline':>12}")
+    for name, key in rows:
+        m = results[key]
+        r2_text = f"{m['r2']:.4f}" if "r2" in m else "—"
+        gain = (base_rmse - m["rmse"]) / base_rmse * 100
+        print(f"  {name:<30} {m['rmse']:>10.4f} {m['mae']:>10.4f} {r2_text:>8} {gain:>+11.1f}%")
 
-    print()
-    print("=" * 68)
-    print("  EVALUATION RESULTS  (held-out test set, last 20% of data)")
-    print("=" * 68)
-    print(f"  {'Model':<35} {'RMSE (°C)':>10}  {'MAE (°C)':>10}  {'R²':>6}")
-    print(f"  {'-'*35} {'-'*10}  {'-'*10}  {'-'*6}")
-    print(f"  {'Persistence Baseline':<35} {base_rmse:>10.4f}  "
-          f"{results['baseline']['mae']:>10.4f}  {'—':>6}")
-    print(f"  {'Ridge Regression':<35} {ridge_rmse:>10.4f}  "
-          f"{results['ridge']['mae']:>10.4f}  {results['ridge']['r2']:>6.4f}")
-    print(f"  {'Gradient Boosting (deployed)':<35} {gb_rmse:>10.4f}  "
-          f"{results['gradient_boosting']['mae']:>10.4f}  "
-          f"{results['gradient_boosting']['r2']:>6.4f}")
-    print(f"  {'-'*35} {'-'*10}  {'-'*10}  {'-'*6}")
-
-    for name, model_rmse in [("Ridge", ridge_rmse), ("GradBoost", gb_rmse)]:
-        improv = (base_rmse - model_rmse) / base_rmse * 100
-        print(f"  {name} RMSE improvement vs baseline: {improv:+.1f}%")
-    print("=" * 68)
-
-    if gb_rmse < base_rmse:
-        print("\n  [PASS] Gradient Boosting beats the persistence baseline.")
-    else:
-        print("\n  [FAIL] Model does NOT beat baseline. Check implementation.")
-
+    verdict = "beats" if results["ridge"]["rmse"] < base_rmse else "does NOT beat"
+    print(f"\n  Ridge {verdict} the persistence baseline.")
     return results
 
 
 def main() -> None:
-    print()
-    print("=" * 68)
-    print("  Weather Intelligence Assistant — Forecaster Training")
-    print("  Implementation: pure numpy/scipy (no scikit-learn)")
-    print("=" * 68)
-    print()
-
     df = load_data(RAW_DATA_PATH)
 
     feat = engineer_features(df)
@@ -230,14 +190,12 @@ def main() -> None:
 
     base_preds = persistence_baseline(X_test, feature_cols)
 
-    print()
-    logger.info("Training Ridge Regression (lambda=1.0)...")
+    logger.info("Training Ridge Regression (alpha=1.0)...")
     ridge = RidgeRegression(alpha=1.0)
     ridge.fit(X_train, y_train)
     ridge_preds = ridge.predict(X_test)
     logger.info("Ridge done. RMSE=%.4f", rmse(y_test, ridge_preds))
 
-    print()
     logger.info("Training Gradient Boosting (200 stumps, lr=0.1, subsample=0.8)...")
     gb = GradientBoostingRegressor(
         n_estimators=200,
@@ -278,12 +236,7 @@ def main() -> None:
     size_kb = MODEL_PATH.stat().st_size / 1024
     logger.info("Model saved to %s  (%.0f KB)", MODEL_PATH, size_kb)
 
-    print()
-    print(f"  Done. Model: {MODEL_PATH}")
-    print(f"  Deployed: Ridge Regression (RMSE={results['ridge']['rmse']:.4f}°C)")
-    print(f"  RMSE improvement (Ridge vs baseline): "
-          f"{(results['baseline']['rmse']-results['ridge']['rmse'])/results['baseline']['rmse']*100:.1f}%")
-    print()
+    print(f"\n  Done. Deployed Ridge (RMSE={results['ridge']['rmse']:.4f}°C): {MODEL_PATH}\n")
 
 
 if __name__ == "__main__":

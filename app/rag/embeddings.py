@@ -15,32 +15,11 @@ import os
 import re
 from collections import Counter
 from pathlib import Path
-from typing import Protocol, runtime_checkable
 
 import joblib
 import numpy as np
 
 logger = logging.getLogger(__name__)
-
-
-@runtime_checkable
-class EmbeddingModel(Protocol):
-    embedding_dim: int
-
-    def fit(self, texts: list[str]) -> "EmbeddingModel": ...
-
-    def embed_text(self, text: str) -> np.ndarray:
-        """float32 array of shape (embedding_dim,)."""
-        ...
-
-    def embed_batch(self, texts: list[str]) -> np.ndarray:
-        """float32 array of shape (N, embedding_dim)."""
-        ...
-
-    def save(self, path: Path) -> None: ...
-
-    @classmethod
-    def load(cls, path: Path) -> "EmbeddingModel": ...
 
 
 class TFIDFEmbeddingModel:
@@ -58,20 +37,10 @@ class TFIDFEmbeddingModel:
         "both","either","neither","there","here","very","just","only","even",
     }
 
-    def __init__(
-        self,
-        embedding_dim: int = 4096,  # big enough for the whole vocab on a small corpus
-        min_df: int = 1,
-        max_df_ratio: float = 0.99,
-    ):
+    def __init__(self, embedding_dim: int = 4096):  # room for the whole vocab on a small corpus
         self.embedding_dim = embedding_dim
-        self.min_df = min_df
-        self.max_df_ratio = max_df_ratio
-
         self._vocab: dict[str, int] = {}
         self._idf: np.ndarray | None = None
-        self._is_fitted = False
-        self._n_docs = 0
 
     @staticmethod
     def _tokenize(text: str) -> list[str]:
@@ -86,20 +55,15 @@ class TFIDFEmbeddingModel:
 
     def fit(self, texts: list[str]) -> "TFIDFEmbeddingModel":
         n = len(texts)
-        self._n_docs = n
 
-        df: Counter = Counter()
+        df: Counter = Counter()  # document frequency per term
         for text in texts:
             df.update(set(self._tokenize(text)))
 
-        max_df_abs = int(n * self.max_df_ratio)
-        vocab_words = sorted(
-            word for word, count in df.items()
-            if self.min_df <= count <= max_df_abs
-        )
+        # drop terms found in (almost) every chunk
+        vocab_words = sorted(w for w, count in df.items() if count <= int(n * 0.99))
 
-        # Over capacity: keep terms that are neither singletons nor ubiquitous,
-        # favouring ones that appear in roughly 15% of chunks.
+        # over capacity: keep mid-frequency terms (no singletons, best near 15% of chunks)
         if len(vocab_words) > self.embedding_dim:
             def score(w: str) -> float:
                 d = df[w]
@@ -118,7 +82,6 @@ class TFIDFEmbeddingModel:
             idf[idx] = math.log((n + 1) / (df[word] + 1)) + 1.0
 
         self._idf = idf
-        self._is_fitted = True
 
         logger.info(
             "TF-IDF fitted: %d docs, %d vocabulary words, dim=%d",
@@ -127,7 +90,7 @@ class TFIDFEmbeddingModel:
         return self
 
     def _tf_vector(self, text: str) -> np.ndarray:
-        if not self._is_fitted:
+        if self._idf is None:
             raise RuntimeError("Call fit() before embed_text()")
 
         tokens = self._tokenize(text)
@@ -157,13 +120,10 @@ class TFIDFEmbeddingModel:
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
         artifact = {
+            "backend": "tfidf",
             "vocab": self._vocab,
             "idf": self._idf,
             "embedding_dim": self.embedding_dim,
-            "n_docs": self._n_docs,
-            "min_df": self.min_df,
-            "max_df_ratio": self.max_df_ratio,
-            "backend": "tfidf",
         }
         joblib.dump(artifact, path, compress=3)
         logger.info("Embedding model saved to %s", path)
@@ -171,15 +131,9 @@ class TFIDFEmbeddingModel:
     @classmethod
     def load(cls, path: Path) -> "TFIDFEmbeddingModel":
         artifact = joblib.load(path)
-        model = cls(
-            embedding_dim=artifact["embedding_dim"],
-            min_df=artifact["min_df"],
-            max_df_ratio=artifact["max_df_ratio"],
-        )
+        model = cls(embedding_dim=artifact["embedding_dim"])
         model._vocab = artifact["vocab"]
         model._idf = artifact["idf"]
-        model._n_docs = artifact["n_docs"]
-        model._is_fitted = True
         logger.info(
             "Embedding model loaded: %d vocab words, dim=%d",
             len(model._vocab), model.embedding_dim,

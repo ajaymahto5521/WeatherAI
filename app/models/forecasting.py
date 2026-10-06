@@ -6,16 +6,10 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import joblib
 import numpy as np
 
 logger = logging.getLogger(__name__)
-
-try:
-    import joblib
-    _JOBLIB_AVAILABLE = True
-except ImportError:
-    _JOBLIB_AVAILABLE = False
-    logger.warning("joblib not installed — ForecastingModel will not work")
 
 
 @dataclass
@@ -75,15 +69,11 @@ class ForecastingModel:
             model_path = settings.forecasting_model_path
 
         self._path = Path(model_path)
-        self._artifact = None
         self._model = None
-        self._metadata = None
+        self._metadata: dict = {}
         self._feature_cols: list[str] = []
 
     def _load(self) -> None:
-        if not _JOBLIB_AVAILABLE:
-            raise RuntimeError("joblib is not installed. Run: pip install joblib")
-
         if not self._path.exists():
             raise FileNotFoundError(
                 f"Forecasting model not found at {self._path}. "
@@ -91,22 +81,10 @@ class ForecastingModel:
             )
 
         logger.info("Loading forecasting model from %s", self._path)
-        self._artifact = joblib.load(self._path)
-        self._model = self._artifact["model"]
-        self._metadata = self._artifact.get("metadata", {})
-        self._feature_cols = self._artifact.get("feature_cols", [])
-
-        logger.info(
-            "Forecasting model loaded: %s | trained %s → %s | test RMSE: %.4f°C",
-            self._metadata.get("model_type", "unknown"),
-            self._metadata.get("train_start", "?"),
-            self._metadata.get("train_end", "?"),
-            self._metadata.get("evaluation", {}).get("ridge", {}).get("rmse", 0),
-        )
-
-    @property
-    def is_loaded(self) -> bool:
-        return self._model is not None
+        artifact = joblib.load(self._path)
+        self._model = artifact["model"]
+        self._metadata = artifact.get("metadata", {})
+        self._feature_cols = artifact["feature_cols"]
 
     def _build_feature_vector(self, cond: WeatherConditions) -> np.ndarray:
         """Build a (1, n_features) array in the column order saved at training time.
@@ -154,33 +132,25 @@ class ForecastingModel:
             "is_daytime": float(6 <= ts.hour <= 20),
         }
 
-        if self._feature_cols:
-            try:
-                vector = np.array([feature_map[c] for c in self._feature_cols],
-                                  dtype=np.float64)
-            except KeyError as e:
-                raise ValueError(
-                    f"Feature {e} is in the training feature list but not in the "
-                    "inference feature map. Check train_forecaster.py vs forecasting.py."
-                ) from e
-        else:
-            vector = np.array(list(feature_map.values()), dtype=np.float64)
-
-        return vector.reshape(1, -1)
+        try:
+            vector = [feature_map[c] for c in self._feature_cols]
+        except KeyError as e:
+            raise ValueError(
+                f"Feature {e} is in the training list but missing here. "
+                "Compare train_forecaster.py with forecasting.py."
+            ) from e
+        return np.array(vector, dtype=np.float64).reshape(1, -1)
 
     def predict(self, conditions: WeatherConditions) -> ForecastResult:
-        if not self.is_loaded:
+        if self._model is None:
             self._load()
 
         X = self._build_feature_vector(conditions)
-        predicted_temp = float(self._model.predict(X)[0])
-
-        # guard against wild extrapolation
-        predicted_temp = float(np.clip(predicted_temp, -10.0, 55.0))
-
+        # clip to a sane range in case the model extrapolates
+        predicted_temp = float(np.clip(self._model.predict(X)[0], -10.0, 55.0))
         next_hour = conditions.timestamp + timedelta(hours=1)
 
-        result = ForecastResult(
+        return ForecastResult(
             predicted_temperature=round(predicted_temp, 1),
             prediction_hour=next_hour.hour,
             prediction_datetime=next_hour.isoformat(),
@@ -192,24 +162,3 @@ class ForecastingModel:
                 "Predictions are for educational purposes only."
             ),
         )
-
-        logger.debug(
-            "Forecast: %.1f°C at %s (input temp: %.1f°C)",
-            result.predicted_temperature,
-            result.prediction_datetime,
-            conditions.temperature,
-        )
-
-        return result
-
-    def get_metadata(self) -> dict:
-        if not self.is_loaded:
-            self._load()
-        return dict(self._metadata)
-
-
-def create_forecasting_model(model_path: str | Path | None = None) -> ForecastingModel:
-    """Build the model and load it now, so a missing file fails at startup."""
-    model = ForecastingModel(model_path=model_path)
-    model._load()
-    return model
