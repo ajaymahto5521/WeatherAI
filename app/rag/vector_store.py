@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import json
 import logging
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Protocol
 
@@ -18,15 +18,11 @@ from app.rag.chunking import Chunk
 logger = logging.getLogger(__name__)
 
 
+@dataclass
 class SearchHit:
     """A retrieved chunk plus its cosine similarity score."""
-
-    def __init__(self, chunk: Chunk, score: float):
-        self.chunk = chunk
-        self.score = score
-
-    def __repr__(self) -> str:
-        return f"SearchHit(score={self.score:.3f}, {self.chunk.document_name}/{self.chunk.section})"
+    chunk: Chunk
+    score: float
 
 
 class VectorStore(Protocol):
@@ -90,13 +86,10 @@ class LocalVectorStore:
 
 
 class PgVectorStore:
-    """
-    pgvector-backed store. Vectors are sent as '[x,y,...]' text literals, so
-    only psycopg2 is required (no pgvector Python adapter).
+    """pgvector-backed store. Vectors go over as '[x,y,...]' text, so only psycopg2 is needed.
 
-    Note: pgvector's HNSW/IVFFlat indexes support at most 2000 dimensions, so
-    an index is created only when embedding_dim <= 2000 (e.g. MiniLM's 384).
-    Larger vectors (TF-IDF fallback) use an exact sequential scan.
+    HNSW indexes cap at 2000 dimensions: MiniLM (384) gets one, the larger
+    TF-IDF vectors fall back to an exact scan.
     """
 
     TABLE = "document_chunks"

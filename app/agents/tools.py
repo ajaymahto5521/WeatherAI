@@ -76,7 +76,6 @@ HOURLY_VARS = [
     "temperature_2m", "relative_humidity_2m", "windspeed_10m", "precipitation",
     "cloudcover", "pressure_msl", "shortwave_radiation", "et0_fao_evapotranspiration",
 ]
-MIN_HISTORY = 25  # need 24h lag + current row
 
 
 def build_conditions(hourly: dict[str, list], i: int) -> WeatherConditions:
@@ -191,8 +190,8 @@ def _schema(name: str, description: str, props: dict, required: list[str]) -> di
 TOOL_SCHEMAS = [
     _schema(
         "search_weather_knowledge",
-        "Search reference documents for definitions and explanations of weather terms, "
-        "alerts (watch vs warning), and the climate/seasons of India.",
+        "Search reference documents for weather terms, alerts (watch vs warning), the "
+        "climate of India, and site safety SOPs (wind/crane limits, heatwave, flood).",
         {"query": {"type": "string", "description": "What to look up."}}, ["query"],
     ),
     _schema(
