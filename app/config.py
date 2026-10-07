@@ -25,11 +25,9 @@ class Settings(BaseSettings):
     app_host: str = "0.0.0.0"
     app_port: int = 8000
 
-    # Azure OpenAI (LLM features stay off while the key is empty)
-    azure_openai_api_key: str = ""
-    azure_openai_endpoint: str = ""
-    azure_openai_deployment_name: str = "gpt-4o"
-    azure_openai_api_version: str = "2024-02-01"
+    # OpenAI (LLM features stay off while the key is empty)
+    openai_api_key: str = ""
+    openai_model_name: str = "gpt-4o"
 
     # PostgreSQL + pgvector
     postgres_host: str = "localhost"

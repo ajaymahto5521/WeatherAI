@@ -10,7 +10,7 @@ import logging
 from typing import Any, Callable
 
 from app.agents.tools import TOOL_SCHEMAS, ToolResult, build_registry
-from app.config import settings
+from app.llm_client import get_client
 from app.schemas.api import AskResponse, ModelPrediction, SourceDocument
 
 logger = logging.getLogger(__name__)
@@ -28,24 +28,15 @@ SYSTEM_PROMPT = (
 )
 
 
-def azure_chat() -> ChatFunc | None:
-    if not (settings.azure_openai_api_key and settings.azure_openai_endpoint):
+def openai_chat() -> ChatFunc | None:
+    llm = get_client()
+    if llm is None:
         return None
-    try:
-        from openai import AzureOpenAI
-    except ImportError:
-        logger.warning("openai package not installed — agent disabled")
-        return None
-
-    client = AzureOpenAI(
-        api_key=settings.azure_openai_api_key,
-        azure_endpoint=settings.azure_openai_endpoint,
-        api_version=settings.azure_openai_api_version,
-    )
+    client, model = llm
 
     def chat(messages: list[dict], tools: list[dict]) -> dict:
         msg = client.chat.completions.create(
-            model=settings.azure_openai_deployment_name,
+            model=model,
             messages=messages, tools=tools, temperature=0.2,
         ).choices[0].message
         return {
@@ -133,7 +124,7 @@ class WeatherAgent:
 
 
 def create_agent(retriever) -> WeatherAgent | None:
-    chat = azure_chat()
+    chat = openai_chat()
     if not chat:
         return None
     from app.models.severity import SeverityClassifier

@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 from typing import Callable
 
-from app.config import settings
+from app.llm_client import get_client
 from app.rag.retrieval import Retriever
 from app.rag.vector_store import SearchHit
 from app.schemas.api import AskResponse, SourceDocument
@@ -18,40 +18,32 @@ logger = logging.getLogger(__name__)
 
 MIN_SCORE = 0.05  # below this a chunk is treated as unrelated
 NO_CONTEXT_ANSWER = (
-    "I couldn't find anything relevant to that question in my weather reference "
-    "documents, so I can't give a grounded answer."
+    "I can only answer questions from the reference documents. "
+    "Please ask a question related to the documents."
 )
 
 SYSTEM_PROMPT = (
     "You are a weather assistant. Answer the user's question using ONLY the numbered "
     "context passages provided. Cite passages like [1] after the claims they support. "
-    "If the context does not contain the answer, say you don't know. Be concise and "
-    "use plain language."
+    f"If the context does not contain the answer, reply exactly: \"{NO_CONTEXT_ANSWER}\" "
+    "Do not use outside knowledge. Write the answer as one sentence or a short paragraph "
+    "of plain prose (no bullet points, headings or tables)."
 )
 
 # (system_prompt, user_prompt) -> answer text
 LLMFunc = Callable[[str, str], str]
 
 
-def azure_llm() -> LLMFunc | None:
-    """Azure OpenAI chat function, or None if not configured/installed."""
-    if not (settings.azure_openai_api_key and settings.azure_openai_endpoint):
+def openai_llm() -> LLMFunc | None:
+    """OpenAI chat function, or None if not configured/installed."""
+    llm = get_client()
+    if llm is None:
         return None
-    try:
-        from openai import AzureOpenAI
-    except ImportError:
-        logger.warning("openai package not installed — LLM disabled")
-        return None
-
-    client = AzureOpenAI(
-        api_key=settings.azure_openai_api_key,
-        azure_endpoint=settings.azure_openai_endpoint,
-        api_version=settings.azure_openai_api_version,
-    )
+    client, model = llm
 
     def call(system: str, user: str) -> str:
         resp = client.chat.completions.create(
-            model=settings.azure_openai_deployment_name,
+            model=model,
             messages=[
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
@@ -91,6 +83,9 @@ class AnswerService:
             text = "(LLM unavailable — showing the most relevant reference passages)\n\n" + \
                 "\n\n".join(h.chunk.text for h in hits[:2])
 
+        if text.strip('" ') == NO_CONTEXT_ANSWER:
+            return AskResponse(answer=NO_CONTEXT_ANSWER, sources=[], tools_used=["rag_retriever"])
+
         # one source per (document, section), best score wins
         best: dict[tuple[str, str], float] = {}
         for h in hits:
@@ -107,11 +102,8 @@ _service: AnswerService | None = None
 
 
 def get_answer_service():
-    """Process-wide answerer, built on first use: the agent if an LLM is configured, else AnswerService."""
+    """Process-wide RAG-only answerer (no live-weather tools), built on first use."""
     global _service
     if _service is None:
-        from app.agents.agent import create_agent
-
-        retriever = Retriever()
-        _service = create_agent(retriever) or AnswerService(retriever, azure_llm())
+        _service = AnswerService(Retriever(), openai_llm())
     return _service
