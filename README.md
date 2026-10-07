@@ -31,7 +31,7 @@ Agent / Orchestrator (LangGraph)
   └──► Severity Classifier ──► fine-tuned DistilBERT (LoRA)
   │
   ▼
-LLM (Azure OpenAI / GPT-4o)
+LLM (OpenAI / GPT-4o)
   │
   ▼
 Structured JSON response { answer, sources, tools_used, model_prediction }
@@ -119,9 +119,8 @@ cp .env.example .env
 Required variables:
 | Variable | Where to get it |
 |---|---|
-| `AZURE_OPENAI_API_KEY` | Azure Portal → Azure OpenAI |
-| `AZURE_OPENAI_ENDPOINT` | Azure Portal → Azure OpenAI |
-| `AZURE_OPENAI_DEPLOYMENT_NAME` | Azure OpenAI Studio → Deployments |
+| `OPENAI_API_KEY` | https://platform.openai.com/api-keys |
+| `OPENAI_MODEL_NAME` | Optional, defaults to `gpt-4o` |
 | `OPENWEATHER_API_KEY` | https://openweathermap.org/api |
 | `POSTGRES_*` | See Database Setup below |
 
@@ -219,6 +218,14 @@ python scripts/ingest_documents.py
 
 This reads `data/reference/`, chunks the documents, generates embeddings, and stores them in PostgreSQL + pgvector.
 
+### Ask questions from the terminal
+
+Run the interactive terminal client from the project folder. Choose one of the five numbered questions or type your own question. It prints each answer without source or JSON details; enter `stop` to exit.
+
+```powershell
+.\venv\Scripts\python.exe scripts\ask.py
+```
+
 ---
 
 ## Testing
@@ -231,7 +238,7 @@ pytest tests/ -v
 
 ## Docker
 
-Prerequisites: a `.env` with `POSTGRES_PASSWORD` (and the Azure/OpenWeather keys), and trained
+Prerequisites: a `.env` with `POSTGRES_PASSWORD` (and the OpenAI/OpenWeather keys), and trained
 models in `./models` (`python training/train_forecaster.py`, `python training/train_severity.py`).
 `./models` is mounted read-only; the RAG index is rebuilt into Postgres on every container start.
 
