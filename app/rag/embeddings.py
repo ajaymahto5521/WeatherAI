@@ -37,7 +37,7 @@ class TFIDFEmbeddingModel:
         "both","either","neither","there","here","very","just","only","even",
     }
 
-    def __init__(self, embedding_dim: int = 4096):  # room for the whole vocab on a small corpus
+    def __init__(self, embedding_dim: int = 8192):  # headroom for mixed text and PDF corpora
         self.embedding_dim = embedding_dim
         self._vocab: dict[str, int] = {}
         self._idf: np.ndarray | None = None
@@ -195,7 +195,7 @@ class SentenceTransformerModel:
 
 def create_embedding_model(
     backend: str | None = None,
-    embedding_dim: int = 4096,
+    embedding_dim: int = 8192,
 ) -> TFIDFEmbeddingModel | SentenceTransformerModel:
     """backend: 'tfidf' | 'sentence' | None/'auto' (env var, else sentence if importable).
 

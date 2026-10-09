@@ -119,7 +119,30 @@ class SectionAwareSplitter:
         self._splitter = RecursiveCharacterSplitter(chunk_size, chunk_overlap)
 
     def split_document(self, file_path: Path) -> list[Chunk]:
-        text = file_path.read_text(encoding="utf-8")
+        if file_path.suffix.lower() == ".pdf":
+            try:
+                from pypdf import PdfReader
+            except ImportError as exc:
+                raise RuntimeError(
+                    "PDF ingestion requires pypdf; install project requirements."
+                ) from exc
+
+            pages = PdfReader(file_path).pages
+            page_texts = [
+                (page_number, page.extract_text() or "")
+                for page_number, page in enumerate(pages, 1)
+            ]
+            if not any(page_text.strip() for _, page_text in page_texts):
+                raise ValueError(
+                    f"No extractable text found in {file_path}; scanned PDFs need OCR."
+                )
+            text = "\n\n".join(
+                f"## Page {page_number}\n{page_text}"
+                for page_number, page_text in page_texts
+                if page_text.strip()
+            )
+        else:
+            text = file_path.read_text(encoding="utf-8")
         source_match = SOURCE.search(text[:1000])
         source = source_match.group(1) if source_match else "Unknown source"
 
@@ -161,14 +184,21 @@ def chunk_directory(
     directory: Path,
     chunk_size: int = 500,
     chunk_overlap: int = 50,
-    extensions: tuple[str, ...] = (".txt", ".md"),
+    extensions: tuple[str, ...] = (".txt", ".md", ".pdf"),
 ) -> list[Chunk]:
-    """Chunk every matching file in a directory, in filename order."""
+    """Chunk supported documents recursively, excluding explicitly out-of-scope folders."""
     splitter = SectionAwareSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    excluded_directories = {"_optional", "_out_of_scope", "_unprocessed"}
 
     files = sorted(
-        f for f in directory.iterdir()
-        if f.suffix.lower() in extensions and f.name != ".gitkeep"
+        (
+            f for f in directory.rglob("*")
+            if f.is_file()
+            and f.suffix.lower() in extensions
+            and f.name != ".gitkeep"
+            and not excluded_directories.intersection(f.relative_to(directory).parts[:-1])
+        ),
+        key=lambda f: f.relative_to(directory).as_posix().casefold(),
     )
 
     all_chunks: list[Chunk] = []

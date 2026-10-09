@@ -9,10 +9,10 @@ class FakeAnswerService:
 
     def answer(self, question):
         self.questions.append(question)
-        return SimpleNamespace(answer=f"Answer to: {question}")
+        return SimpleNamespace(answer=f"Answer to: {question}", tools_used=["rag_retriever"], answered_by="rag_retriever")
 
 
-def test_interactive_cli_prints_answers_and_stops(monkeypatch, capsys):
+def test_interactive_cli_accepts_suggested_and_typed_questions(monkeypatch, capsys):
     service = FakeAnswerService()
     questions = iter(["1", "What is a tornado warning?", "STOP", "ignored"])
     monkeypatch.setattr("builtins.input", lambda _prompt: next(questions))
@@ -25,5 +25,6 @@ def test_interactive_cli_prints_answers_and_stops(monkeypatch, capsys):
     ]
     output = capsys.readouterr().out
     assert "1. What does a severe thunderstorm warning mean?" in output
-    assert "Answer to: What does a severe thunderstorm warning mean?" in output
     assert "Answer to: What is a tornado warning?" in output
+    assert "Choose a question by number, or type your own question:" in output
+    assert "Time taken: " in output

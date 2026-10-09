@@ -1,3 +1,6 @@
+import sys
+from types import SimpleNamespace
+
 import pytest
 
 from app.rag.chunking import RecursiveCharacterSplitter, SectionAwareSplitter, chunk_directory
@@ -24,6 +27,48 @@ def test_reference_docs_have_metadata():
     chunks = chunk_directory(ROOT / "data" / "reference")
     assert {c.document_name for c in chunks} and len(chunks) > 20
     assert all(c.text.strip() and c.section and c.char_end > c.char_start for c in chunks)
+
+
+def test_chunk_directory_reads_nested_files_and_skips_excluded_folders(tmp_path):
+    (tmp_path / "hazards").mkdir()
+    (tmp_path / "_out_of_scope").mkdir()
+    (tmp_path / "hazards" / "storm.txt").write_text("Severe wind safety.", encoding="utf-8")
+    (tmp_path / "_out_of_scope" / "unrelated.txt").write_text("Not weather.", encoding="utf-8")
+
+    chunks = chunk_directory(tmp_path)
+
+    assert [chunk.document_name for chunk in chunks] == ["storm.txt"]
+
+
+def test_pdf_text_is_split_into_page_sections(tmp_path, monkeypatch):
+    pdf_path = tmp_path / "weather.pdf"
+    pdf_path.write_bytes(b"mock PDF")
+    fake_page = SimpleNamespace(extract_text=lambda: "Thunderstorms can produce lightning.")
+    monkeypatch.setitem(
+        sys.modules,
+        "pypdf",
+        SimpleNamespace(PdfReader=lambda path: SimpleNamespace(pages=[fake_page])),
+    )
+
+    chunks = SectionAwareSplitter().split_document(pdf_path)
+
+    assert len(chunks) == 1
+    assert chunks[0].section == "Page 1"
+    assert "Thunderstorms can produce lightning." in chunks[0].text
+
+
+def test_pdf_without_extractable_text_requires_ocr(tmp_path, monkeypatch):
+    pdf_path = tmp_path / "scanned.pdf"
+    pdf_path.write_bytes(b"mock PDF")
+    fake_page = SimpleNamespace(extract_text=lambda: "")
+    monkeypatch.setitem(
+        sys.modules,
+        "pypdf",
+        SimpleNamespace(PdfReader=lambda path: SimpleNamespace(pages=[fake_page])),
+    )
+
+    with pytest.raises(ValueError, match="scanned PDFs need OCR"):
+        SectionAwareSplitter().split_document(pdf_path)
 
 
 def test_markdown_sections_and_tables():
