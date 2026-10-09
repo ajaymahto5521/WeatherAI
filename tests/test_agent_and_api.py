@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 
 from app.agents import tools
 from app.agents.agent import MAX_STEPS, WeatherAgent
+from app.agents.graph import NO_ANSWER, WeatherGraph
 from app.main import app
 from app.schemas.api import AskRequest
 from app.services import answer_service
@@ -95,6 +96,15 @@ def test_classifier_failure_does_not_break_answer(registry):
 def test_empty_llm_answer_gets_placeholder(registry):
     r = WeatherAgent(scripted([{"content": "  ", "tool_calls": None}]), registry).answer("q")
     assert r.answer == "I wasn't able to produce an answer."
+
+
+def test_no_answer_message_does_not_include_model_scope_details(retriever):
+    graph = WeatherGraph(retriever)
+
+    response = graph.no_answer_node({"question": "Define weather?"})["answer"]
+
+    assert response == NO_ANSWER
+    assert "next-hour temperature for New Delhi" not in response
 
 
 # ---------------------------------------------------------------- HTTP layer

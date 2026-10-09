@@ -81,6 +81,10 @@ class AskResponse(BaseModel):
         description="Names of tools the agent called to answer this question.",
         examples=[["rag_retriever"], ["live_weather_tool", "rag_retriever"]]
     )
+    answered_by: str | None = Field(
+        default=None,
+        description="Source that produced the answer: 'ml_forecaster' or 'rag_retriever'. None if refused.",
+    )
     model_prediction: ModelPrediction | None = Field(
         default=None,
         description="Structured output from the forecasting model, if invoked."

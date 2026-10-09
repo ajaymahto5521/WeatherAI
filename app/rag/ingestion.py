@@ -36,6 +36,7 @@ def ingest(
     backend: str = "auto",
     embedding_backend: str | None = None,
 ) -> IngestionResult:
+    # Split source files into small passages so retrieval can return focused evidence.
     chunks = chunk_directory(
         reference_dir,
         chunk_size=settings.rag_chunk_size,
@@ -44,13 +45,16 @@ def ingest(
     if not chunks:
         raise RuntimeError(f"No documents found in {reference_dir}")
 
+    # Fit on this corpus, then embed every chunk with the same vocabulary/model.
     embedder = create_embedding_model(embedding_backend)
     embedder.fit([c.text for c in chunks])
     embeddings = embedder.embed_batch([c.text for c in chunks])
 
     index_dir.mkdir(parents=True, exist_ok=True)
+    # Query-time retrieval must load this exact fitted embedder to create compatible vectors.
     embedder.save(index_dir / EMBEDDER_FILENAME)
 
+    # Rebuild the index so it contains the current documents, not stale chunks.
     store = create_vector_store(embedder.embedding_dim, index_dir, backend=backend)
     store.reset()
     store.add(chunks, embeddings)

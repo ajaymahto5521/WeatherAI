@@ -35,11 +35,13 @@ class Retriever:
             raise FileNotFoundError(
                 f"{embedder_path} not found — run scripts/ingest_documents.py first"
             )
+        # Load the embedder fitted during ingestion so questions use the same vector space.
         self.embedder = _load_embedder(embedder_path)
         self.store = create_vector_store(self.embedder.embedding_dim, index_dir, backend=backend)
         self.top_k = top_k or settings.rag_top_k
 
     def retrieve(self, query: str, top_k: int | None = None) -> list[SearchHit]:
+        # The store ranks document chunks by similarity to the question vector.
         return self.store.search(self.embedder.embed_text(query), top_k or self.top_k)
 
     @staticmethod

@@ -98,12 +98,14 @@ class AnswerService:
         return AskResponse(answer=text, sources=sources, tools_used=["rag_retriever"])
 
 
-_service: AnswerService | None = None
+_service = None
 
 
 def get_answer_service():
-    """Process-wide RAG-only answerer (no live-weather tools), built on first use."""
+    """Process-wide LangGraph pipeline (ML -> RAG -> web), built on first use."""
     global _service
     if _service is None:
-        _service = AnswerService(Retriever(), openai_llm())
+        from app.agents.graph import WeatherGraph, openai_chat_model
+
+        _service = WeatherGraph(Retriever(), openai_chat_model())
     return _service

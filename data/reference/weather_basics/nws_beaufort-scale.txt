@@ -1,0 +1,31 @@
+Source: https://www.weather.gov/pqr/beaufort
+Publisher: NOAA National Weather Service, Portland OR (Beaufort Scale)
+Retrieved: 2026-10-06
+
+Beaufort scale: estimating wind speed and sea state with visual clues. Wind speeds are in knots (1 knot = 1.852 km/h = 1.151 mph).
+
+Beaufort force 0 (Calm): wind speed 0 knots; wave height 0 feet; visual clues: Sea is like a mirror. Smoke rises vertically.
+
+Beaufort force 1 (Light Air): wind speed 1-3 kts; wave height < 1/2; visual clues: Ripples with the appearance of scales are formed, but without foam crests. Smoke drifts from funnel.
+
+Beaufort force 2 (Light breeze): wind speed 4-6 kts; wave height 1/2 ft (max 1); visual clues: Small wavelets, still short but more pronounced, crests have glassy appearance and do not break. Wind felt on face. Smoke rises at about 80 degrees.
+
+Beaufort force 3 (Gentle Breeze): wind speed 7-10 kts; wave height 2 ft (max 3); visual clues: Large wavelets, crests begin to break. Foam of glassy appearance. Perhaps scattered white horses (white caps). Wind extends light flag and pennants. Smoke rises at about 70 deg.
+
+Beaufort force 4 (Moderate Breeze): wind speed 11-16 kts; wave height 3 ft (max 5); visual clues: Small waves, becoming longer. Fairly frequent white horses (white caps). Wind raises dust and loose paper on deck. Smoke rises at about 50 deg. No noticeable sound in the rigging. Slack halyards curve and sway. Heavy flag flaps limply.
+
+Beaufort force 5 (Fresh Breeze): wind speed 17-21kts; wave height 6 ft (max 8); visual clues: Moderate waves, taking more pronounced long form. Many white horses (white caps) are formed (chance of some spray). Wind felt strongly on face. Smoke rises at about 30 deg. Slack halyards whip while bending continuously to leeward. Taut halyards maintain slightly bent position. Low whistle in the rigging. Heavy flag doesn't extended but flaps over entire length.
+
+Beaufort force 6 (Strong Breeze): wind speed 22-27 kts; wave height 9 ft (max 12); visual clues: Large waves begin to form. White foam crests are more extensive everywhere (probably some spray). Wind stings face in temperatures below 35 deg F (2C). Slight effort in maintaining balance against wind. Smoke rises at about 15 deg. Both slack and taut halyards whip slightly in bent position. Low moaning, rather than whistle, in the rigging. Heavy flag extends and flaps more vigorously.
+
+Beaufort force 7 (Near Gale): wind speed 28-33 kts; wave height 13 ft (max 19); visual clues: Sea heaps up and white foam from breaking waves begins to be blown in streaks along the direction of wind. Necessary to lean slightly into the wind to maintain balance. Smoke rises at about 5 to 10 deg. Higher pitched moaning and whistling heard from rigging. Halyards still whip slightly. Heavy flag extends fully and flaps only at the end. Oilskins and loose clothing inflate and pull against the body.
+
+Beaufort force 8 (Gale): wind speed 34-40 kts; wave height 18 ft (max 25); visual clues: Moderately high waves of greater length. Edges of crests begin to break into the spindrift. The foam is blown in well-marked streaks along the direction of the wind. Head pushed back by the force of the wind if allowed to relax. Oilskins and loose clothing inflate and pull strongly. Halyards rigidly bent. Loud whistle from rigging. Heavy flag straight out and whipping.
+
+Beaufort force 9 (Strong Gale): wind speed 41-47 kts; wave height 23 ft (max 32); visual clues: High waves. Dense streaks of foam along direction of wind. Crests of waves begin to topple, tumble and roll over. Spray may affect visibility.
+
+Beaufort force 10 (Storm): wind speed 48-55 kts; wave height 29 ft (max 41); visual clues: Very high waves with long overhanging crests. The resulting foam, in great patches is blown in dense streaks along the direction of the wind. On the whole, the sea takes on a whitish appearance. Tumbling of the sea becomes heavy and shock-like. Visibility affected.
+
+Beaufort force 11 (Violent Storm): wind speed 56-63 kts; wave height 37 ft (max 52); visual clues: Exceptionally high waves (small and medium-sized ships might be for time lost to view behind the waves). The sea is completely covered with long white patches of foam lying along the direction of the wind. Everywhere, the edges of the wave crests are blown into froth. Visibility greatly affected.
+
+Beaufort force 12 (Hurricane): wind speed 64+ kts; wave height 45+ ft; visual clues: The air is filled with foam and spray. The sea is completely white with driving spray. Visibility is seriously affected.

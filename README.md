@@ -216,7 +216,7 @@ Output: `models/severity_classifier/` + zero-shot vs fine-tuned comparison table
 python scripts/ingest_documents.py
 ```
 
-This reads `data/reference/`, chunks the documents, generates embeddings, and stores them in PostgreSQL + pgvector.
+This reads supported `.txt`, `.md`, and text-based `.pdf` files recursively from `data/reference/`, chunks the documents, generates embeddings, and stores them in PostgreSQL + pgvector. Scanned PDFs require OCR before ingestion. Files under `_optional/`, `_out_of_scope/`, and `_unprocessed/` are excluded.
 
 ### Ask questions from the terminal
 
