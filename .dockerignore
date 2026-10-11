@@ -6,7 +6,6 @@ venv/
 *.pyc
 data/raw/
 data/processed/
-models/
 notebooks/
 tests/
 .pytest_cache/

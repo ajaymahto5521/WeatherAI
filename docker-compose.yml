@@ -31,8 +31,6 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      # Trained model artifacts (git-ignored): run the training scripts first.
-      - ./models:/app/models:ro
       # Holds the fitted embedder written at ingestion; must persist for retrieval.
       - ragindex:/app/data/processed
 

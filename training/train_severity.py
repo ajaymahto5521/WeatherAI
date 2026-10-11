@@ -20,11 +20,12 @@ import torch
 from peft import LoraConfig, TaskType, get_peft_model
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-from training.severity_data import LABELS, build_dataset
+from training.severity_data import LABELS, build_dataset as build_easy
+from training.severity_data_realistic import build_dataset as build_realistic
 
 BASE_MODEL = "distilbert-base-uncased"
 OUT_DIR = os.path.join(ROOT, "models", "severity_classifier")
-EPOCHS, BATCH, LR, MAX_LEN, SEED = 3, 32, 5e-4, 64, 42
+EPOCHS, BATCH, LR, MAX_LEN, SEED = 5, 32, 5e-4, 96, 42
 
 
 def keyword_baseline(text: str) -> int:
@@ -63,10 +64,16 @@ def report(name, y_true, y_pred):
 def main():
     torch.manual_seed(SEED)
     np.random.seed(SEED)
-    train, test = build_dataset(seed=SEED)
+    # Main benchmark: noisy alerts whose labels follow the site SOP thresholds. A slice of the
+    # older plain-language data stays in training so qualitative text still works.
+    train, test = build_realistic(seed=SEED)
+    easy_train, easy_test = build_easy(n_per_class_train=100, seed=SEED)
+    train = train + easy_train
+    np.random.RandomState(SEED).shuffle(train)
     x_tr, y_tr = [t for t, _ in train], np.array([l for _, l in train])
     x_te, y_te = [t for t, _ in test], np.array([l for _, l in test])
-    print(f"train={len(train)} test={len(test)} (test uses held-out hazard wording)")
+    x_easy, y_easy = [t for t, _ in easy_test], np.array([l for _, l in easy_test])
+    print(f"train={len(train)} test={len(test)} (realistic, held-out wording) + {len(easy_test)} easy")
 
     tok = AutoTokenizer.from_pretrained(BASE_MODEL)
     cfg = dict(num_labels=len(LABELS), id2label=dict(enumerate(LABELS)),
@@ -77,8 +84,14 @@ def main():
     results = {"untrained": report("untrained DistilBERT", y_te, predict(base, tok, x_te))}
     results["keyword"] = report("keyword heuristic", y_te, np.array([keyword_baseline(t) for t in x_te]))
 
-    lora = LoraConfig(task_type=TaskType.SEQ_CLS, r=8, lora_alpha=16, lora_dropout=0.1,
-                      target_modules=["q_lin", "v_lin"])
+    # plain-language test set, scored before LoRA layers are injected into `base`
+    easy_results = {
+        "untrained": report("untrained (easy)", y_easy, predict(base, tok, x_easy)),
+        "keyword": report("keyword (easy)", y_easy, np.array([keyword_baseline(t) for t in x_easy])),
+    }
+
+    lora = LoraConfig(task_type=TaskType.SEQ_CLS, r=16, lora_alpha=32, lora_dropout=0.1,
+                      target_modules=["q_lin", "k_lin", "v_lin", "out_lin"])
     model = get_peft_model(base, lora)  # classifier head is trained automatically for SEQ_CLS
     trainable, total = (sum(p.numel() for p in model.parameters() if p.requires_grad),
                         sum(p.numel() for p in model.parameters()))
@@ -105,6 +118,7 @@ def main():
     print("\nTest results:")
     y_pred = predict(model, tok, x_te)
     results["lora"] = report("LoRA fine-tuned", y_te, y_pred)
+    easy_results["lora"] = report("LoRA (easy)", y_easy, predict(model, tok, x_easy))
 
     cm = np.zeros((4, 4), dtype=int)
     for t, p in zip(y_te, y_pred):
@@ -118,6 +132,7 @@ def main():
     with open(os.path.join(OUT_DIR, "training_meta.json"), "w") as f:
         json.dump({"base_model": BASE_MODEL, "labels": LABELS, "max_len": MAX_LEN,
                    "test_results": {k: {"accuracy": v[0], "macro_f1": v[1]} for k, v in results.items()},
+                   "test_results_easy": {k: {"accuracy": v[0], "macro_f1": v[1]} for k, v in easy_results.items()},
                    "note": "Trained on synthetic data; not for operational use."}, f, indent=2)
     print(f"\nSaved to {OUT_DIR}")
 

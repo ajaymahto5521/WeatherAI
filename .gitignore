@@ -41,7 +41,6 @@ data/processed/
 # --- Trained model artifacts (use versioned storage for large models) ---
 # Only ignore the top-level /models/ directory (saved .pkl/.pt files)
 # NOT app/models/ which contains Python source code
-/models/
 *.pkl
 *.joblib
 *.pt
@@ -49,6 +48,7 @@ data/processed/
 *.bin
 # Exception: keep .gitkeep so empty folders are tracked
 !/models/.gitkeep
+!/models/forecaster.joblib
 # Exception: keep small test fixtures if needed
 !tests/fixtures/*.pkl
 

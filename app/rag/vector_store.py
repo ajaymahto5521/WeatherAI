@@ -106,6 +106,16 @@ class PgVectorStore:
     def _init_schema(self) -> None:
         with self._conn.cursor() as cur:
             cur.execute("CREATE EXTENSION IF NOT EXISTS vector")
+            # A table left over from a different embedder has the wrong vector size. The index
+            # is rebuilt from the documents on every ingest, so drop it instead of failing.
+            cur.execute(
+                "SELECT a.atttypmod FROM pg_attribute a WHERE a.attrelid = to_regclass(%s) "
+                "AND a.attname = 'embedding'", (self.TABLE,),
+            )
+            row = cur.fetchone()
+            if row and row[0] != self.embedding_dim:
+                logger.warning("Dropping %s: stored dim %s != %s", self.TABLE, row[0], self.embedding_dim)
+                cur.execute(f"DROP TABLE {self.TABLE}")
             cur.execute(
                 f"""
                 CREATE TABLE IF NOT EXISTS {self.TABLE} (

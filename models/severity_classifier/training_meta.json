@@ -1,0 +1,55 @@
+{
+  "base_model": "distilbert-base-uncased",
+  "labels": [
+    "LOW",
+    "MODERATE",
+    "SEVERE",
+    "CRITICAL"
+  ],
+  "max_len": 96,
+  "test_results": {
+    "untrained": {
+      "accuracy": 0.25,
+      "macro_f1": 0.10040160642570281
+    },
+    "keyword": {
+      "accuracy": 0.29,
+      "macro_f1": 0.16986245334151456
+    },
+    "lora": {
+      "accuracy": 0.9225,
+      "macro_f1": 0.9214937797326077
+    },
+    "zero_shot:gpt-4o": {
+      "accuracy": 0.48,
+      "macro_f1": 0.4419592949789999
+    },
+    "rubric:gpt-4o": {
+      "accuracy": 0.87,
+      "macro_f1": 0.8695924582192545
+    },
+    "zero_shot:gpt-4o-mini": {
+      "accuracy": 0.485,
+      "macro_f1": 0.4548287322653424
+    },
+    "rubric:gpt-4o-mini": {
+      "accuracy": 0.7875,
+      "macro_f1": 0.7796846405015168
+    }
+  },
+  "test_results_easy": {
+    "untrained": {
+      "accuracy": 0.23333333333333334,
+      "macro_f1": 0.09459459459459459
+    },
+    "keyword": {
+      "accuracy": 0.7708333333333334,
+      "macro_f1": 0.7495315893545982
+    },
+    "lora": {
+      "accuracy": 0.8333333333333334,
+      "macro_f1": 0.8296967640874662
+    }
+  },
+  "note": "Trained on synthetic data; not for operational use."
+}

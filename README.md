@@ -206,7 +206,30 @@ Output: `models/forecaster.joblib` + evaluation metrics printed to stdout.
 python training/train_severity.py
 ```
 
-Output: `models/severity_classifier/` + zero-shot vs fine-tuned comparison table.
+Output: `models/severity_classifier/` + a comparison of untrained, keyword and LoRA results.
+
+The benchmark is `training/severity_data_realistic.py`: noisy site alerts (mixed units, distractor
+numbers, misleading hype words, typos, held-out wording) whose labels follow the SOP thresholds in
+`data/reference/`. A small slice of plain-language text is added to training.
+
+Zero-shot LLM baselines on the same test set (needs `OPENAI_API_KEY`; results are added to
+`models/severity_classifier/training_meta.json`):
+
+```bash
+python training/eval_zero_shot.py gpt-4o gpt-4o-mini
+```
+
+| Method (400 test alerts) | Accuracy |
+|---|---|
+| Untrained DistilBERT | 25.0% |
+| Keyword rules | 29.0% |
+| Zero-shot GPT-4o / GPT-4o-mini (labels only) | 48.0% / 48.5% |
+| GPT-4o / GPT-4o-mini given the SOP thresholds | 87.0% / 78.8% |
+| **LoRA fine-tuned** | **92.2%** |
+
+On the older, cleaner synthetic text a zero-shot LLM scores higher than the fine-tuned model,
+so the harder benchmark is what shows the value of fine-tuning on domain labels. The data is
+generated; treat the numbers as a method comparison, not real-world accuracy.
 
 ---
 
@@ -238,9 +261,9 @@ pytest tests/ -v
 
 ## Docker
 
-Prerequisites: a `.env` with `POSTGRES_PASSWORD` (and the OpenAI/OpenWeather keys), and trained
-models in `./models` (`python training/train_forecaster.py`, `python training/train_severity.py`).
-`./models` is mounted read-only; the RAG index is rebuilt into Postgres on every container start.
+Prerequisite: a `.env` with `POSTGRES_PASSWORD` (and the OpenAI/OpenWeather keys). The trained
+models in `./models` (about 4 MB) are committed and copied into the image, so a clean clone needs
+no training step. The RAG index is rebuilt into Postgres on every container start.
 
 ```bash
 # Build and start everything (app + postgres)
