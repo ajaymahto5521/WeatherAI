@@ -16,8 +16,9 @@ COPY app ./app
 COPY training ./training
 COPY scripts ./scripts
 COPY data/reference ./data/reference
+COPY models ./models
 
-# Trained models are NOT baked in (they are git-ignored); compose mounts ./models.
+# Trained models (forecaster + LoRA severity adapter, ~4 MB) are committed and baked in.
 
 RUN useradd --create-home appuser && mkdir -p data/processed && chown -R appuser /app
 USER appuser
