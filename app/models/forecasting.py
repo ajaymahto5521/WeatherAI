@@ -9,6 +9,8 @@ from pathlib import Path
 import joblib
 import numpy as np
 
+from app import monitoring
+
 logger = logging.getLogger(__name__)
 
 
@@ -149,6 +151,9 @@ class ForecastingModel:
         # clip to a sane range in case the model extrapolates
         predicted_temp = float(np.clip(self._model.predict(X)[0], -10.0, 55.0))
         next_hour = conditions.timestamp + timedelta(hours=1)
+        monitoring.log_forecast(dict(zip(self._feature_cols, X[0].round(4).tolist())),
+                                round(predicted_temp, 2),
+                                self._metadata.get("model_type", "RidgeRegression"))
 
         return ForecastResult(
             predicted_temperature=round(predicted_temp, 1),
