@@ -233,6 +233,13 @@ generated; treat the numbers as a method comparison, not real-world accuracy.
 
 ---
 
+## MLOps
+
+- **Experiment tracking:** both training scripts log params, metrics and artifacts to MLflow (local `mlflow.db`, or `MLFLOW_TRACKING_URI`). View with `mlflow ui --backend-store-uri sqlite:///mlflow.db`.
+- **Model registry:** each training run registers a new version (`weatherai-forecaster`, `weatherai-severity-classifier`) with alias `candidate`. Copy a version into `models/` with `python scripts/pull_model.py`.
+- **CI:** `.github/workflows/ci.yml` runs the tests and builds the Docker image. `retrain-forecaster.yml` is a manual retraining job.
+- **Monitoring:** `GET /metrics` exposes request counts and latency (Prometheus text). Forecasts are logged to `logs/forecast_predictions.jsonl`; `python scripts/check_drift.py` compares them with the training features.
+
 ## RAG Ingestion
 
 ```bash
