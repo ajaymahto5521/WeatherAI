@@ -87,3 +87,8 @@ temp/
 training_output.txt
 tmp_*.py
 tmp_*.txt
+
+# --- MLflow local tracking ---
+mlflow.db
+mlruns/
+mlartifacts/

@@ -20,6 +20,7 @@ import torch
 from peft import LoraConfig, TaskType, get_peft_model
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
+from training import tracking
 from training.severity_data import LABELS, build_dataset as build_easy
 from training.severity_data_realistic import build_dataset as build_realistic
 
@@ -62,6 +63,11 @@ def report(name, y_true, y_pred):
 
 
 def main():
+    with tracking.start_run("severity_classifier", "distilbert-lora"):
+        _train()
+
+
+def _train():
     torch.manual_seed(SEED)
     np.random.seed(SEED)
     # Main benchmark: noisy alerts whose labels follow the site SOP thresholds. A slice of the
@@ -97,6 +103,9 @@ def main():
                         sum(p.numel() for p in model.parameters()))
     print(f"\nLoRA trainable params: {trainable:,} / {total:,} ({100 * trainable / total:.2f}%)")
 
+    tracking.log_params({"base_model": BASE_MODEL, "epochs": EPOCHS, "batch_size": BATCH, "lr": LR,
+                         "max_len": MAX_LEN, "seed": SEED, "lora_r": 16, "lora_alpha": 32,
+                         "n_train": len(x_tr), "n_test": len(x_te), "trainable_params": trainable})
     opt = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=LR)
     steps = EPOCHS * ((len(x_tr) + BATCH - 1) // BATCH)
     sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda s: max(0.0, 1 - s / steps))
@@ -113,12 +122,18 @@ def main():
             out.loss.backward()
             opt.step(); sched.step(); opt.zero_grad()
             losses.append(out.loss.item())
+        tracking.log_metrics({"train_loss": float(np.mean(losses))}, step=epoch + 1)
         print(f"  epoch {epoch + 1}/{EPOCHS}  loss={np.mean(losses):.4f}  ({time.time() - start:.0f}s)")
 
     print("\nTest results:")
     y_pred = predict(model, tok, x_te)
     results["lora"] = report("LoRA fine-tuned", y_te, y_pred)
     easy_results["lora"] = report("LoRA (easy)", y_easy, predict(model, tok, x_easy))
+
+    tracking.log_metrics({f"{name}_{m}": v for name, (acc, f1) in results.items()
+                          for m, v in (("accuracy", acc), ("macro_f1", f1))})
+    tracking.log_metrics({f"easy_{name}_{m}": v for name, (acc, f1) in easy_results.items()
+                          for m, v in (("accuracy", acc), ("macro_f1", f1))})
 
     cm = np.zeros((4, 4), dtype=int)
     for t, p in zip(y_te, y_pred):

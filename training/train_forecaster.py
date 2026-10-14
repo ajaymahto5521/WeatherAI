@@ -25,6 +25,8 @@ MODEL_PATH     = MODEL_DIR / "forecaster.joblib"
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from training import tracking  # noqa: E402
+
 # Must come from the package so the pickle references app.models.ml_models,
 # not __main__.
 from app.models.ml_models import (  # noqa: E402
@@ -178,6 +180,11 @@ def print_results_table(y_test, base_preds, ridge_preds, gb_preds) -> dict:
 
 
 def main() -> None:
+    with tracking.start_run("forecaster", "ridge-vs-gb"):
+        _train()
+
+
+def _train() -> None:
     df = load_data(RAW_DATA_PATH)
 
     feat = engineer_features(df)
@@ -209,6 +216,14 @@ def main() -> None:
 
     results = print_results_table(y_test, base_preds, ridge_preds, gb_preds)
 
+    tracking.log_params({
+        "ridge_alpha": ridge.alpha, "gb_n_estimators": 200, "gb_learning_rate": 0.1,
+        "gb_subsample": 0.8, "test_fraction": 0.20, "n_train": len(X_train),
+        "n_test": len(X_test), "n_features": len(feature_cols),
+    })
+    tracking.log_metrics({f"{model}_{metric}": value
+                          for model, d in results.items() for metric, value in d.items()})
+
     # Ridge is what gets served; the boosted model is kept for comparison.
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
     artifact = {
@@ -234,6 +249,7 @@ def main() -> None:
     }
     joblib.dump(artifact, MODEL_PATH, compress=3)
     size_kb = MODEL_PATH.stat().st_size / 1024
+    tracking.log_artifact(MODEL_PATH)
     logger.info("Model saved to %s  (%.0f KB)", MODEL_PATH, size_kb)
 
     print(f"\n  Done. Deployed Ridge (RMSE={results['ridge']['rmse']:.4f}°C): {MODEL_PATH}\n")
