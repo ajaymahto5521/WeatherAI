@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, mlops]
+    branches: [main, mlops, Ajay/WeatherAI]
   pull_request:
 
 jobs:
