@@ -235,10 +235,16 @@ generated; treat the numbers as a method comparison, not real-world accuracy.
 
 ## MLOps
 
-- **Experiment tracking:** both training scripts log params, metrics and artifacts to MLflow (local `mlflow.db`, or `MLFLOW_TRACKING_URI`). View with `mlflow ui --backend-store-uri sqlite:///mlflow.db`.
-- **Model registry:** each training run registers a new version (`weatherai-forecaster`, `weatherai-severity-classifier`) with alias `candidate`. Copy a version into `models/` with `python scripts/pull_model.py`.
-- **CI:** `.github/workflows/ci.yml` runs the tests and builds the Docker image. `retrain-forecaster.yml` is a manual retraining job.
-- **Monitoring:** `GET /metrics` exposes request counts and latency (Prometheus text). Forecasts are logged to `logs/forecast_predictions.jsonl`; `python scripts/check_drift.py` compares them with the training features.
+| Area | What exists | How to use it |
+|---|---|---|
+| Experiment tracking | Both training scripts log params, metrics and artifacts to MLflow (`training/tracking.py`). Runs go to local `mlflow.db`, or `MLFLOW_TRACKING_URI` if set. | `mlflow ui --backend-store-uri sqlite:///mlflow.db` |
+| Model registry | Each training run registers a new version of `weatherai-forecaster` / `weatherai-severity-classifier` with alias `candidate`. | `python scripts/pull_model.py [--name ... --alias ...]` copies a version into `models/` |
+| CI | `.github/workflows/ci.yml`: runs `pytest -m "not slow"`, then builds the Docker image. Triggers on pushes to `main`, `mlops`, `Ajay/WeatherAI` and on pull requests. | Actions tab |
+| CD | `.github/workflows/cd.yml`: after tests pass, pushes the image to GitHub Container Registry as `ghcr.io/<owner>/<repo>` (`latest` and commit-SHA tags). Triggers on `main` and `Ajay/WeatherAI`. | `docker pull ghcr.io/<owner>/<repo>:latest` |
+| Retraining | `.github/workflows/retrain-forecaster.yml`: manual run that downloads fresh data, retrains the forecaster and uploads `forecaster.joblib` + `mlflow.db` as an artifact. It does not commit the model. | Actions -> Retrain forecaster -> Run workflow |
+| Monitoring | `GET /metrics` exposes request counts and latency (Prometheus text, per process). Forecast inputs and outputs are appended to `logs/forecast_predictions.jsonl`. | `python scripts/check_drift.py` compares logged inputs with training features (needs 30+ logged predictions) |
+
+Not yet covered: automatic deployment to a hosting target, automated promotion of registry versions into the served model (the API loads the files baked into the image), severity-model retraining in CI, and scheduled drift checks.
 
 ## RAG Ingestion
 
