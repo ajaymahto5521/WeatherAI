@@ -47,3 +47,19 @@ def log_metrics(metrics: dict, step: int | None = None) -> None:
 def log_artifact(path) -> None:
     if mlflow is not None and mlflow.active_run():
         mlflow.log_artifact(str(path))
+
+
+def register_model(name: str, artifact_path, alias: str = "candidate") -> None:
+    """Log a file as a versioned registry model and point `alias` at the new version."""
+    if mlflow is None or not mlflow.active_run():
+        return
+    mlflow.pyfunc.log_model(
+        name=name,
+        python_model=str(PROJECT_ROOT / "training" / "registry_model.py"),
+        artifacts={"artifact": str(artifact_path)},
+        registered_model_name=name,
+    )
+    client = mlflow.MlflowClient()
+    version = max(client.search_model_versions(f"name='{name}'"), key=lambda v: int(v.version)).version
+    client.set_registered_model_alias(name, alias, version)
+    logger.info("Registered %s version %s (alias '%s')", name, version, alias)

@@ -250,6 +250,7 @@ def _train() -> None:
     joblib.dump(artifact, MODEL_PATH, compress=3)
     size_kb = MODEL_PATH.stat().st_size / 1024
     tracking.log_artifact(MODEL_PATH)
+    tracking.register_model("weatherai-forecaster", MODEL_PATH)
     logger.info("Model saved to %s  (%.0f KB)", MODEL_PATH, size_kb)
 
     print(f"\n  Done. Deployed Ridge (RMSE={results['ridge']['rmse']:.4f}°C): {MODEL_PATH}\n")
